@@ -1,0 +1,2630 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FITLOG — สมุดบันทึกการออกกำลังกาย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700;900&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF2F6;
+    --grid:#CBD8E3;
+    --ink:#16222E;
+    --ink-soft:#5B6E7E;
+    --paper:#FFFFFF;
+    --accent:#FF4B33;
+    --accent-soft:rgba(255,75,51,.10);
+    --highlight:#FFCB47;
+    --navy:#16222E;
+    --line:#D7E0EA;
+    --radius:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'IBM Plex Sans Thai','IBM Plex Sans',sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .grid-bg{
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size:28px 28px;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:0 24px;}
+
+  /* ===== Typography helpers ===== */
+  h1,h2,h3{font-family:'Kanit',sans-serif;font-weight:900;letter-spacing:.5px;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.78rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--accent);
+    font-weight:700;
+    display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:18px; height:2px; background:var(--accent);
+    display:inline-block;
+  }
+
+  /* ===== Nav ===== */
+  header.nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(238,242,246,.85);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:1100px; margin:0 auto; padding:18px 24px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .logo{
+    font-family:'Kanit',sans-serif; font-weight:900; font-size:1.4rem;
+    letter-spacing:.5px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .logo span.bar{
+    display:inline-block; width:10px; height:22px; background:var(--accent);
+    transform:skewX(-12deg);
+  }
+  .navlinks{display:flex; gap:32px; font-size:.95rem; font-weight:500;}
+  .navlinks a{color:var(--ink-soft); text-decoration:none; transition:color .15s;}
+  .navlinks a:hover, .navlinks a:focus-visible{color:var(--ink);}
+  .nav-cta{
+    background:var(--ink); color:#fff; border:none;
+    font-family:'IBM Plex Sans Thai',sans-serif; font-weight:600;
+    padding:10px 22px; border-radius:999px; font-size:.9rem;
+    cursor:pointer; transition:background .15s;
+  }
+  .nav-cta:hover, .nav-cta:focus-visible{background:var(--accent);}
+  @media (max-width:760px){ .navlinks{display:none;} }
+
+  /* ===== Hero ===== */
+  .hero{padding:72px 0 56px; position:relative;}
+  .hero-inner{display:grid; grid-template-columns:1.1fr 1fr; gap:48px; align-items:center;}
+  @media (max-width:880px){ .hero-inner{grid-template-columns:1fr;} }
+  .hero h1{
+    font-size:clamp(2.6rem, 5.5vw, 4.4rem);
+    line-height:1.08; margin:14px 0 20px;
+  }
+  .hero h1 .hl{
+    background:linear-gradient(transparent 62%, var(--highlight) 62%);
+    padding:0 4px;
+  }
+  .hero p.lead{font-size:1.08rem; color:var(--ink-soft); max-width:480px; margin-bottom:28px;}
+  .hero-actions{display:flex; gap:14px; flex-wrap:wrap;}
+  .btn-primary, .btn-secondary{
+    font-family:'IBM Plex Sans Thai',sans-serif; font-weight:600; font-size:.95rem;
+    padding:14px 28px; border-radius:999px; cursor:pointer; border:2px solid transparent;
+    transition:transform .12s ease, box-shadow .12s ease;
+    text-decoration:none; display:inline-block;
+  }
+  .btn-primary{background:var(--accent); color:#fff;}
+  .btn-primary:hover, .btn-primary:focus-visible{transform:translateY(-2px); box-shadow:0 8px 20px rgba(255,75,51,.3);}
+  .btn-secondary{background:transparent; color:var(--ink); border-color:var(--ink);}
+  .btn-secondary:hover, .btn-secondary:focus-visible{background:var(--ink); color:#fff;}
+
+  /* ===== Signature: weight log chart card ===== */
+  .log-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:24px;
+    box-shadow:0 18px 40px -24px rgba(22,34,46,.35);
+  }
+  .log-card-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;}
+  .log-card-head h3{font-size:.95rem; font-weight:700; letter-spacing:.5px;}
+  .log-card-head .delta{
+    font-family:'IBM Plex Mono',monospace; font-weight:700; color:#1F9D55; font-size:.95rem;
+  }
+  .chart-area{position:relative; height:200px; margin:14px 0 6px;}
+  .chart-area svg{width:100%; height:100%; overflow:visible;}
+  .chart-line{
+    fill:none; stroke:var(--accent); stroke-width:3;
+    stroke-linecap:round; stroke-linejoin:round;
+    stroke-dasharray:520; stroke-dashoffset:520;
+    transition:stroke-dashoffset 1.4s cubic-bezier(.25,.8,.25,1);
+  }
+  .log-card.in-view .chart-line{stroke-dashoffset:0;}
+  .chart-dot{fill:var(--paper); stroke:var(--accent); stroke-width:2.5; opacity:0; transition:opacity .3s; transition-delay:1.2s;}
+  .log-card.in-view .chart-dot{opacity:1;}
+  .chart-fill{fill:var(--accent-soft); opacity:0; transition:opacity .8s; transition-delay:.6s;}
+  .log-card.in-view .chart-fill{opacity:1;}
+  .axis-label{font-family:'IBM Plex Mono',monospace; font-size:10px; fill:var(--ink-soft);}
+  .stat-row{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  .stat-chip{
+    flex:1; min-width:90px; background:var(--bg); border:1px solid var(--line);
+    border-radius:10px; padding:10px 12px;
+  }
+  .stat-chip .num{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:1.15rem;}
+  .stat-chip .lbl{font-size:.72rem; color:var(--ink-soft); margin-top:2px;}
+
+  /* ===== Sections generic ===== */
+  section{padding:80px 0;}
+  section.alt{background:var(--paper); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .section-head{max-width:620px; margin-bottom:48px;}
+  .section-head h2{font-size:clamp(1.9rem, 3.6vw, 2.7rem); margin:14px 0 12px;}
+  .section-head p{color:var(--ink-soft); font-size:1.02rem;}
+
+  /* ===== Tracking cards ===== */
+  .track-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:24px;}
+  @media (max-width:880px){ .track-grid{grid-template-columns:1fr;} }
+  .track-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    padding:28px; display:flex; flex-direction:column; gap:14px;
+  }
+  .track-card .icon{
+    width:44px; height:44px; border-radius:10px; background:var(--accent-soft);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .track-card h3{font-size:1.15rem; font-weight:700; font-family:'IBM Plex Sans Thai',sans-serif;}
+  .track-card p{color:var(--ink-soft); font-size:.92rem;}
+  /* mini body-photo placeholder */
+  .photo-row{display:flex; gap:8px;}
+  .photo-slot{
+    flex:1; aspect-ratio:3/4; border-radius:8px; border:1.5px dashed var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:var(--ink-soft);
+    background:repeating-linear-gradient(135deg, transparent, transparent 6px, var(--bg) 6px, var(--bg) 7px);
+  }
+  /* measurement bars */
+  .measure{display:flex; flex-direction:column; gap:8px;}
+  .measure-row{display:flex; align-items:center; gap:10px; font-size:.82rem;}
+  .measure-row .m-label{width:54px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace;}
+  .measure-row .m-bar{flex:1; height:6px; background:var(--bg); border-radius:4px; overflow:hidden;}
+  .measure-row .m-bar span{display:block; height:100%; background:var(--accent); border-radius:4px;}
+  .measure-row .m-val{font-family:'IBM Plex Mono',monospace; width:46px; text-align:right;}
+  .bc-input-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(70px,1fr)); gap:8px; margin-top:14px;}
+  .bc-input-grid input{
+    width:100%; padding:9px 8px; border:1.5px solid var(--line); border-radius:8px;
+    font-family:'IBM Plex Mono',monospace; font-size:.85rem; background:var(--bg); color:var(--ink); text-align:center;
+  }
+  .bc-input-grid input::placeholder{font-family:'IBM Plex Sans Thai',sans-serif; font-size:.7rem;}
+  .track-card .btn-add{width:100%; margin-top:10px;}
+  .bc-delta{font-size:.74rem; color:var(--ink-soft); margin-top:8px; min-height:1.1em;}
+  .bc-tip{font-size:.72rem; color:var(--ink-soft); margin-top:8px; line-height:1.6;}
+
+  /* ===== Calculator ===== */
+  .calc-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:0;
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden;
+  }
+  @media (max-width:880px){ .calc-grid{grid-template-columns:1fr;} }
+  .calc-form{padding:36px; border-right:1px solid var(--line);}
+  @media (max-width:880px){ .calc-form{border-right:none; border-bottom:1px solid var(--line);} }
+  .field{margin-bottom:18px;}
+  .field label{display:block; font-size:.82rem; font-weight:600; margin-bottom:6px; color:var(--ink-soft);}
+  .field input, .field select{
+    width:100%; padding:11px 14px; border:1.5px solid var(--line); border-radius:8px;
+    font-family:'IBM Plex Mono',monospace; font-size:.95rem; background:var(--bg); color:var(--ink);
+  }
+  .field input:focus, .field select:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent);}
+  .seg{display:flex; gap:8px;}
+  .seg label{
+    flex:1; text-align:center; border:1.5px solid var(--line); border-radius:8px;
+    padding:10px; font-size:.88rem; font-weight:600; cursor:pointer; color:var(--ink-soft);
+    transition:all .12s;
+  }
+  .seg input{position:absolute; opacity:0; pointer-events:none;}
+  .seg input:checked + span{}
+  .seg label:has(input:checked){background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  .calc-results{padding:36px; display:flex; flex-direction:column; gap:22px; justify-content:center; background:var(--navy); color:#fff;}
+  .result-block .lbl{
+    font-family:'IBM Plex Mono',monospace; font-size:.75rem; letter-spacing:.15em; text-transform:uppercase;
+    color:#9FB3C4; margin-bottom:4px;
+  }
+  .result-block .val{font-family:'IBM Plex Mono',monospace; font-size:2.2rem; font-weight:700;}
+  .result-block .val span{font-size:1.1rem; color:#9FB3C4; font-weight:400;}
+  .goal-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:6px;}
+  .goal-cell{background:rgba(255,255,255,.06); border-radius:10px; padding:12px; text-align:center;}
+  .goal-cell .gname{font-size:.72rem; color:#9FB3C4; margin-bottom:4px;}
+  .goal-cell .gval{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:1.15rem;}
+  .goal-cell.highlight{background:var(--accent);}
+  .goal-cell.highlight .gname{color:#FFE3DD;}
+
+  /* ===== Programs / workout generator ===== */
+  .program-controls{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:32px;}
+  .pill-group{display:flex; gap:8px; flex-wrap:wrap;}
+  .pill{
+    font-family:'IBM Plex Sans Thai',sans-serif; font-weight:600; font-size:.88rem;
+    padding:10px 20px; border-radius:999px; border:1.5px solid var(--line);
+    background:var(--paper); cursor:pointer; transition:all .12s; color:var(--ink-soft);
+  }
+  .pill.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .pill:focus-visible{outline:2px solid var(--accent);}
+  .plan-title{font-family:'IBM Plex Mono',monospace; font-size:.85rem; color:var(--ink-soft); margin-bottom:18px;}
+  .plan-days{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px;}
+  .day-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    padding:20px; position:relative;
+  }
+  .day-num{
+    font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:.75rem; color:var(--accent);
+    margin-bottom:4px;
+  }
+  .day-card h4{font-family:'Kanit',sans-serif; font-size:1.15rem; font-weight:700; margin-bottom:10px;}
+  .day-card ul{list-style:none; display:flex; flex-direction:column; gap:7px;}
+  .day-card li{font-size:.88rem; color:var(--ink-soft); padding-left:16px; position:relative;}
+  .day-card li::before{
+    content:""; position:absolute; left:0; top:.55em; width:7px; height:7px;
+    background:var(--highlight); border-radius:1px; transform:rotate(45deg);
+  }
+  .day-card .note{
+    margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);
+    font-size:.8rem; font-family:'IBM Plex Mono',monospace; color:var(--accent);
+  }
+
+  /* ===== Exercise library ===== */
+  .lib-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:18px;}
+  .lib-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; transition:transform .15s, box-shadow .15s;
+  }
+  .lib-card:hover{transform:translateY(-4px); box-shadow:0 14px 30px -20px rgba(22,34,46,.4);}
+  .lib-thumb{
+    height:120px; background:
+      repeating-linear-gradient(45deg, var(--bg) 0 10px, var(--paper) 10px 20px);
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .lib-thumb svg{width:38px; height:38px; stroke:var(--ink-soft); fill:none; stroke-width:1.6;}
+  .lib-body{padding:16px;}
+  .lib-tag{
+    font-family:'IBM Plex Mono',monospace; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:4px;
+  }
+  .lib-body h4{font-size:1rem; font-weight:700; font-family:'IBM Plex Sans Thai',sans-serif; margin-bottom:8px;}
+  .lib-link{font-size:.82rem; color:var(--ink-soft); text-decoration:none; font-weight:600;}
+  .lib-link:hover{color:var(--accent);}
+
+  /* ===== Pricing ===== */
+  .price-grid{display:grid; grid-template-columns:1fr 1fr; gap:24px;}
+  @media (max-width:760px){ .price-grid{grid-template-columns:1fr;} }
+  .price-card{
+    border-radius:var(--radius); padding:32px; border:1px solid var(--line);
+  }
+  .price-card.free{background:var(--paper);}
+  .price-card.premium{background:var(--navy); color:#fff; position:relative; overflow:hidden;}
+  .price-card.premium::before{
+    content:"แนะนำ"; position:absolute; top:18px; right:-30px; transform:rotate(35deg);
+    background:var(--accent); color:#fff; font-size:.7rem; font-weight:700;
+    padding:4px 36px; font-family:'IBM Plex Mono',monospace; letter-spacing:.1em;
+  }
+  .price-name{font-family:'Kanit',sans-serif; font-weight:900; font-size:1.6rem; margin-bottom:4px;}
+  .price-cost{font-family:'IBM Plex Mono',monospace; font-size:2rem; font-weight:700; margin:10px 0 20px;}
+  .price-cost span{font-size:.95rem; font-weight:400; opacity:.7;}
+  .price-card ul{list-style:none; display:flex; flex-direction:column; gap:12px; margin-bottom:24px;}
+  .price-card li{display:flex; gap:10px; font-size:.92rem; align-items:flex-start;}
+  .price-card li svg{flex-shrink:0; margin-top:3px; width:16px; height:16px;}
+  .price-card.free li svg{stroke:#1F9D55;}
+  .price-card.premium li svg{stroke:var(--highlight);}
+  .price-card .btn-primary, .price-card .btn-secondary{width:100%; text-align:center; box-sizing:border-box;}
+  .price-card.premium .btn-secondary{border-color:#fff; color:#fff;}
+  .price-card.premium .btn-secondary:hover{background:#fff; color:var(--navy);}
+
+  /* ===== Footer ===== */
+  footer{padding:48px 0; border-top:1px solid var(--line);}
+  .foot-inner{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;}
+  .foot-inner p{color:var(--ink-soft); font-size:.85rem;}
+  .foot-links{display:flex; gap:24px; font-size:.85rem;}
+  .foot-links a{color:var(--ink-soft); text-decoration:none;}
+  .foot-links a:hover{color:var(--accent);}
+
+  /* ===== Weight log input ===== */
+  .log-input-row{display:flex; gap:8px; margin-top:14px;}
+  .log-input-row input{
+    flex:1; padding:10px 12px; border:1.5px solid var(--line); border-radius:8px;
+    font-family:'IBM Plex Mono',monospace; font-size:.9rem; background:var(--bg); color:var(--ink);
+  }
+  .btn-add{
+    background:var(--ink); color:#fff; border:none; border-radius:8px;
+    padding:10px 18px; font-family:'IBM Plex Sans Thai',sans-serif; font-weight:600;
+    font-size:.88rem; cursor:pointer; transition:background .15s;
+  }
+  .btn-add:hover, .btn-add:focus-visible{background:var(--accent);}
+  .hero .hint{font-size:.74rem; color:var(--ink-soft); margin-top:8px;}
+
+  /* ===== Insight panel (BMI + recommendations) ===== */
+  .insight-panel{
+    display:grid; grid-template-columns:.85fr 1.15fr; gap:0;
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    margin-top:24px; overflow:hidden;
+  }
+  @media (max-width:880px){ .insight-panel{grid-template-columns:1fr;} }
+  .insight-bmi{padding:32px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:14px;}
+  @media (max-width:880px){ .insight-bmi{border-right:none; border-bottom:1px solid var(--line);} }
+  .lbl-small{
+    font-family:'IBM Plex Mono',monospace; font-size:.75rem; letter-spacing:.15em;
+    text-transform:uppercase; color:var(--ink-soft);
+  }
+  .bmi-value{font-family:'IBM Plex Mono',monospace; font-size:3rem; font-weight:700; line-height:1;}
+  .bmi-badge{
+    display:inline-block; padding:6px 14px; border-radius:999px; font-size:.82rem;
+    font-weight:700; color:#fff; width:fit-content; transition:background .2s;
+  }
+  .bmi-scale{margin-top:6px;}
+  .bmi-scale-bar{position:relative; height:10px; border-radius:6px; display:flex;}
+  .bmi-scale-bar span{display:block; height:100%;}
+  .bmi-scale-bar .seg-under{width:17.5%; background:#3B82F6; border-radius:6px 0 0 6px;}
+  .bmi-scale-bar .seg-normal{width:22.5%; background:#1F9D55;}
+  .bmi-scale-bar .seg-over{width:10%; background:#FFCB47;}
+  .bmi-scale-bar .seg-obese1{width:25%; background:#FF8A33;}
+  .bmi-scale-bar .seg-obese2{width:25%; background:#FF4B33; border-radius:0 6px 6px 0;}
+  .bmi-marker{
+    position:absolute; top:-5px; width:0; height:0;
+    border-left:6px solid transparent; border-right:6px solid transparent;
+    border-top:8px solid var(--ink); transform:translateX(-6px);
+    transition:left .25s ease;
+  }
+  .bmi-scale-labels{
+    display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem; color:var(--ink-soft); margin-top:10px;
+  }
+  .ideal-weight{font-size:.9rem; color:var(--ink-soft); margin-top:auto;}
+  .ideal-weight strong{color:var(--ink); font-family:'IBM Plex Mono',monospace;}
+
+  .insight-detail{padding:32px; display:flex; flex-direction:column; gap:20px;}
+  .reco-box{
+    background:var(--accent-soft); border-left:3px solid var(--accent);
+    border-radius:8px; padding:14px 16px; font-size:.92rem; line-height:1.7;
+  }
+  .reco-box strong{color:var(--accent);}
+  .macro-head{display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:10px;}
+  .macro-head .target-name{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:.92rem; color:var(--accent);}
+  .macro-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+  .macro-card{background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:14px; text-align:center;}
+  .macro-card .mval{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:1.3rem;}
+  .macro-card .munit{font-size:.7rem; color:var(--ink-soft);}
+  .macro-card .mlbl{font-size:.78rem; font-weight:600; margin-top:4px;}
+  .water-note{
+    display:flex; align-items:center; gap:10px; font-size:.88rem; color:var(--ink-soft);
+    padding-top:14px; border-top:1px dashed var(--line); line-height:1.6;
+  }
+  .water-note strong{color:var(--ink); font-family:'IBM Plex Mono',monospace;}
+  .cta-premium{display:block; width:100%; border:none; text-align:center; box-sizing:border-box;}
+  .disclaimer{font-size:.76rem; color:var(--ink-soft); margin-top:14px; line-height:1.7;}
+  .goal-cell{cursor:pointer; transition:background .15s, transform .1s;}
+  .goal-cell:hover{transform:translateY(-2px);}
+  .goal-cell:focus-visible{outline:2px solid #fff;}
+
+  /* ===== Exercise library — clickable cards & modal ===== */
+  .lib-card{cursor:pointer;}
+  .lib-card:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .lib-tap-hint{font-size:.7rem; color:var(--ink-soft); margin-top:6px;}
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(22,34,46,.55);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    z-index:100; opacity:0; visibility:hidden; transition:opacity .2s;
+  }
+  .modal-overlay.open{opacity:1; visibility:visible;}
+  .modal-box{
+    background:var(--paper); border-radius:var(--radius); max-width:480px; width:100%;
+    max-height:85vh; overflow-y:auto; position:relative;
+    transform:translateY(16px); transition:transform .2s;
+  }
+  .modal-overlay.open .modal-box{transform:translateY(0);}
+  .modal-close{
+    position:absolute; top:12px; right:12px; width:34px; height:34px; border-radius:50%;
+    border:none; background:var(--bg); color:var(--ink); font-size:1rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; z-index:2;
+  }
+  .modal-close:hover, .modal-close:focus-visible{background:var(--accent); color:#fff;}
+  .modal-thumb{
+    height:140px;
+    background:repeating-linear-gradient(45deg, var(--bg) 0 10px, var(--paper) 10px 20px);
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .modal-thumb svg{width:56px; height:56px; stroke:var(--accent); fill:none; stroke-width:1.6;}
+  .modal-body{padding:24px;}
+  .modal-body h3{font-size:1.4rem; margin:6px 0 10px;}
+  .modal-body h4{font-family:'IBM Plex Sans Thai',sans-serif; font-size:.92rem; font-weight:700; margin:18px 0 8px; color:var(--accent);}
+  .modal-body p{font-size:.92rem; color:var(--ink-soft);}
+  .modal-body ol, .modal-body ul{padding-left:20px; display:flex; flex-direction:column; gap:6px; font-size:.9rem; color:var(--ink-soft);}
+  .modal-sets{
+    display:inline-block; margin-top:10px; font-family:'IBM Plex Mono',monospace;
+    font-size:.85rem; font-weight:700; color:var(--ink); background:var(--bg);
+    border-radius:999px; padding:6px 14px;
+  }
+
+  /* ===== Meal / Calorie tracker ===== */
+  .meal-grid{
+    display:grid; grid-template-columns:.85fr 1.15fr; gap:24px;
+  }
+  @media (max-width:880px){ .meal-grid{grid-template-columns:1fr;} }
+  .meal-summary{
+    background:var(--navy); color:#fff; border-radius:var(--radius); padding:28px;
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .meal-summary .lbl-small{color:#9FB3C4;}
+  .meal-target{font-family:'IBM Plex Mono',monospace; font-size:2rem; font-weight:700;}
+  .meal-bar{height:12px; background:rgba(255,255,255,.12); border-radius:999px; overflow:hidden;}
+  .meal-bar-fill{height:100%; width:0%; background:var(--accent); border-radius:999px; transition:width .3s ease, background .3s;}
+  .meal-stats-row{display:flex; gap:24px;}
+  .meal-num{font-family:'IBM Plex Mono',monospace; font-size:1.3rem; font-weight:700; margin-top:2px;}
+  .meal-hint{font-size:.85rem; color:#C9D6E3; line-height:1.6;}
+  .meal-cta{
+    margin-top:auto; font-size:.82rem; color:#9FB3C4; padding-top:14px;
+    border-top:1px solid rgba(255,255,255,.12); line-height:1.6;
+  }
+  .meal-cta a{color:var(--highlight); font-weight:700; text-decoration:none;}
+
+  .meal-input-area{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius); padding:24px;
+    display:flex; flex-direction:column; gap:18px;
+  }
+  .quick-chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    font-family:'IBM Plex Sans Thai',sans-serif; font-size:.82rem; font-weight:600;
+    background:var(--bg); border:1px solid var(--line); border-radius:999px;
+    padding:7px 14px; cursor:pointer; transition:all .12s; color:var(--ink-soft);
+  }
+  .chip:hover, .chip:focus-visible{border-color:var(--accent); color:var(--accent);}
+  .meal-form{display:grid; grid-template-columns:1.6fr 1fr 1fr auto; gap:8px;}
+  @media (max-width:600px){ .meal-form{grid-template-columns:1fr 1fr; } .meal-form button{grid-column:span 2;} }
+  .meal-form input, .meal-form select{
+    padding:10px 12px; border:1.5px solid var(--line); border-radius:8px;
+    font-family:'IBM Plex Sans Thai',sans-serif; font-size:.88rem; background:var(--bg); color:var(--ink);
+  }
+  .meal-list{list-style:none; display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto;}
+  .meal-item{
+    display:flex; align-items:center; gap:10px; background:var(--bg); border:1px solid var(--line);
+    border-radius:8px; padding:10px 12px; font-size:.88rem;
+  }
+  .meal-item .m-type{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; text-transform:uppercase;
+    color:var(--accent); background:var(--accent-soft); border-radius:6px; padding:3px 7px; flex-shrink:0;
+  }
+  .meal-item .m-name{flex:1;}
+  .meal-item .m-kcal{font-family:'IBM Plex Mono',monospace; font-weight:700;}
+  .meal-item .m-del{
+    border:none; background:none; color:var(--ink-soft); cursor:pointer; font-size:1rem;
+    width:24px; height:24px; flex-shrink:0; border-radius:6px;
+  }
+  .meal-item .m-del:hover, .meal-item .m-del:focus-visible{color:var(--accent); background:var(--accent-soft);}
+  .meal-empty{font-size:.85rem; color:var(--ink-soft); text-align:center; padding:16px 0;}
+
+  /* ===== Visual progress — uploadable photo slots ===== */
+  .photo-slot{
+    position:relative; overflow:hidden; background-size:cover; background-position:center;
+  }
+  .photo-slot input[type="file"]{
+    position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;
+  }
+  .photo-slot .ps-placeholder{
+    text-align:center; line-height:1.5; padding:0 6px; pointer-events:none;
+  }
+  .photo-slot .ps-placeholder small{display:block; font-size:.6rem; opacity:.75; margin-top:3px;}
+  .photo-slot .ps-label{
+    position:absolute; bottom:0; left:0; right:0; font-size:.68rem; padding:5px;
+    text-align:center; background:rgba(255,255,255,.88); color:var(--ink-soft);
+    display:none; pointer-events:none;
+  }
+  .photo-slot.has-image{border-style:solid; background-color:var(--paper);}
+  .photo-slot.has-image .ps-placeholder{display:none;}
+  .photo-slot.has-image .ps-label{display:block;}
+
+  /* ===== Exercise demo figure (animated "GIF") ===== */
+  .modal-thumb{position:relative;}
+  .gif-badge{
+    position:absolute; top:10px; left:10px; font-family:'IBM Plex Mono',monospace;
+    font-size:.62rem; letter-spacing:.12em; background:var(--ink); color:#fff;
+    padding:3px 9px; border-radius:4px;
+  }
+  .modal-thumb svg.fig{
+    width:76px; height:76px; stroke:var(--ink-soft); stroke-width:5; fill:none;
+    stroke-linecap:round;
+  }
+  .modal-thumb svg.fig .fig-head{fill:var(--accent); stroke:none;}
+  .fig-arms, .fig-legs{transform-box: fill-box; transform-origin: center;}
+
+  @keyframes anim-squat{ 0%,100%{transform:translateY(0) scaleY(1);} 50%{transform:translateY(8px) scaleY(.9);} }
+  .modal-thumb.anim-squat svg.fig{ animation:anim-squat 1.8s ease-in-out infinite; transform-box:fill-box; transform-origin:bottom center; }
+
+  @keyframes anim-bench{ 0%,100%{transform:translateY(8px);} 50%{transform:translateY(-14px);} }
+  .modal-thumb.anim-bench .fig-arms{ animation:anim-bench 1.6s ease-in-out infinite; }
+
+  @keyframes anim-latpull{ 0%,100%{transform:translateY(-12px);} 50%{transform:translateY(10px);} }
+  .modal-thumb.anim-latpull .fig-arms{ animation:anim-latpull 1.8s ease-in-out infinite; }
+
+  @keyframes anim-rdl{ 0%,100%{transform:rotate(0deg);} 50%{transform:rotate(-25deg);} }
+  .modal-thumb.anim-rdl svg.fig{ animation:anim-rdl 2s ease-in-out infinite; transform-box:fill-box; transform-origin:top center; }
+
+  @keyframes anim-plank{ 0%,100%{transform:scaleY(1);} 50%{transform:scaleY(1.04);} }
+  .modal-thumb.anim-plank svg.fig{ animation:anim-plank 2.4s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+
+  @keyframes anim-shoulder{ 0%,100%{transform:rotate(0deg) translateY(0);} 50%{transform:rotate(-18deg) translateY(-10px);} }
+  .modal-thumb.anim-shoulder .fig-arms{ animation:anim-shoulder 1.8s ease-in-out infinite; }
+
+  /* ===== Toast notification ===== */
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--navy); color:#fff; padding:13px 24px; border-radius:999px;
+    font-size:.86rem; font-weight:600; box-shadow:0 14px 32px -12px rgba(22,34,46,.5);
+    opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:200;
+    max-width:88vw; text-align:center;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ===== Premium checkout (mockup) ===== */
+  .checkout-box{max-width:420px;}
+  .checkout-summary{
+    display:flex; justify-content:space-between; align-items:baseline;
+    background:var(--bg); border-radius:10px; padding:14px 16px; margin:16px 0 20px; font-size:.92rem;
+  }
+  .checkout-price{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:1.05rem;}
+  .pay-methods{display:flex; gap:10px; margin-bottom:18px;}
+  .pay-method{
+    flex:1; display:flex; align-items:center; gap:8px; border:1.5px solid var(--line);
+    border-radius:10px; padding:12px; cursor:pointer; font-size:.85rem; font-weight:600; transition:all .12s;
+  }
+  .pay-method:has(input:checked){border-color:var(--accent); background:var(--accent-soft);}
+  .pay-method input{accent-color:var(--accent);}
+  .pay-card-fields, .pay-qr{display:flex; flex-direction:column; gap:10px; margin-bottom:20px;}
+  .pay-card-fields input{
+    padding:11px 14px; border:1.5px solid var(--line); border-radius:8px;
+    font-family:'IBM Plex Mono',monospace; font-size:.9rem; background:var(--bg); color:var(--ink); width:100%;
+  }
+  .pay-row{display:flex; gap:10px;}
+  .pay-row input{flex:1;}
+  .pay-qr{align-items:center; text-align:center;}
+  .qr-box{width:148px; height:148px; padding:8px; background:#fff; border:1px solid var(--line); border-radius:10px;}
+  .qr-box svg{width:100%; height:100%; display:block;}
+  .pay-qr p{font-size:.85rem; color:var(--ink-soft); max-width:260px;}
+
+  .checkout-success{text-align:center; padding:8px 0;}
+  .checkout-success .check-icon{
+    width:60px; height:60px; border-radius:50%; background:#1F9D55; color:#fff;
+    display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:1.7rem;
+  }
+  .checkout-success h3{margin-bottom:8px;}
+  .checkout-success p{color:var(--ink-soft); font-size:.92rem; margin-bottom:22px;}
+
+  /* ===== Plan toggle ===== */
+  .plan-toggle{
+    font-family:'IBM Plex Sans Thai',sans-serif; font-weight:600; font-size:.88rem;
+    padding:9px 20px; border-radius:999px; border:none; background:transparent;
+    cursor:pointer; color:var(--ink-soft); transition:all .15s;
+  }
+  .plan-toggle.active{background:var(--ink); color:#fff;}
+
+  /* ===== Payment method tabs in checkout ===== */
+  .pay-tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;}
+  .pay-tab{
+    flex:1; min-width:80px; display:flex; flex-direction:column; align-items:center;
+    gap:5px; border:1.5px solid var(--line); border-radius:10px; padding:12px 8px;
+    cursor:pointer; font-size:.78rem; font-weight:600; transition:all .12s;
+    color:var(--ink-soft); background:var(--paper); font-family:'IBM Plex Sans Thai',sans-serif;
+  }
+  .pay-tab.active{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
+  .pay-tab .pay-icon{font-size:1.3rem;}
+  .checkout-plan-row{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--navy); color:#fff; border-radius:10px; padding:14px 16px; margin:14px 0 18px;
+  }
+  .checkout-plan-row .plan-name{font-weight:700;}
+  .checkout-plan-row .plan-price{font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--highlight);}
+  .processing-overlay{
+    position:absolute; inset:0; background:rgba(255,255,255,.9);
+    display:none; align-items:center; justify-content:center; flex-direction:column;
+    gap:14px; border-radius:var(--radius); z-index:10;
+  }
+  .processing-overlay.show{display:flex;}
+  .spinner{
+    width:40px; height:40px; border:3px solid var(--line); border-top-color:var(--accent);
+    border-radius:50%; animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ===== Mini trend sparklines ===== */
+  .spark-wrap{margin-top:14px;}
+  .spark-legend{display:flex; gap:14px; font-size:.72rem; color:var(--ink-soft); margin-bottom:4px;}
+  .spark-legend span{display:flex; align-items:center; gap:5px;}
+  .spark-dot{width:8px; height:8px; border-radius:50%; display:inline-block;}
+  .spark{width:100%; height:42px; display:block;}
+  .spark-empty{font-size:.74rem; color:var(--ink-soft); text-align:center; padding:10px 0;}
+
+  /* ===== Goal setting ===== */
+  .goal-grid-2{
+    display:grid; grid-template-columns:.9fr 1.1fr; gap:0;
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+  }
+  @media (max-width:880px){ .goal-grid-2{grid-template-columns:1fr;} }
+  .goal-form{padding:32px; border-right:1px solid var(--line);}
+  @media (max-width:880px){ .goal-form{border-right:none; border-bottom:1px solid var(--line);} }
+  .goal-result{padding:32px; display:flex; flex-direction:column; gap:18px; justify-content:center;}
+  .goal-progress-bar{height:14px; background:var(--bg); border-radius:999px; overflow:hidden;}
+  .goal-progress-fill{height:100%; width:0%; background:var(--accent); border-radius:999px; transition:width .3s;}
+  .goal-stat-row{display:flex; gap:24px; flex-wrap:wrap;}
+  .goal-stat .val{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:1.3rem; margin-top:4px;}
+  .goal-eta{
+    background:var(--accent-soft); border-left:3px solid var(--accent); border-radius:8px;
+    padding:14px 16px; font-size:.9rem; line-height:1.65;
+  }
+
+  /* ===== Login / signup modal (mockup) ===== */
+  .auth-box{max-width:400px;}
+  .auth-tabs{display:flex; gap:8px; margin:16px 0 18px;}
+  .auth-tab{
+    flex:1; text-align:center; padding:10px; border-radius:8px; border:1.5px solid var(--line);
+    font-weight:600; font-size:.88rem; cursor:pointer; background:var(--paper); color:var(--ink-soft);
+    font-family:'IBM Plex Sans Thai',sans-serif; transition:all .12s;
+  }
+  .auth-tab.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .auth-fields{display:flex; flex-direction:column; gap:10px; margin-bottom:18px;}
+  .auth-fields input{
+    padding:11px 14px; border:1.5px solid var(--line); border-radius:8px;
+    font-family:'IBM Plex Sans Thai',sans-serif; font-size:.9rem; background:var(--bg); color:var(--ink); width:100%;
+  }
+  .auth-note{
+    background:var(--bg); border-radius:8px; padding:12px 14px; font-size:.82rem;
+    color:var(--ink-soft); line-height:1.65; margin-top:14px;
+  }
+
+  /* focus visibility */
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; animation:none !important;}
+    .chart-line{stroke-dashoffset:0 !important;}
+    .chart-dot, .chart-fill{opacity:1 !important;}
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="logo"><span class="bar"></span>FITLOG</div>
+    <nav class="navlinks">
+      <a href="#tracking">บันทึกร่างกาย</a>
+      <a href="#goals">เป้าหมาย</a>
+      <a href="#calculator">คำนวณแคลอรี</a>
+      <a href="#programs">โปรแกรมเล่น</a>
+      <a href="#library">คลังท่าเล่น</a>
+      <a href="#pricing">แพ็กเกจ</a>
+    </nav>
+    <div style="display:flex; gap:10px;">
+      <button class="btn-secondary" id="navLoginBtn" type="button" style="padding:10px 20px; font-size:.88rem;">เข้าสู่ระบบ</button>
+      <button class="nav-cta" id="navFreeBtn" type="button">เริ่มบันทึกฟรี</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero grid-bg">
+  <div class="wrap hero-inner">
+    <div>
+      <div class="eyebrow">สมุดบันทึกฉบับดิจิทัล</div>
+      <h1>ตัวเลขบนตาชั่ง<br>คือ<span class="hl">ข้อมูล</span> ไม่ใช่คำตัดสิน</h1>
+      <p class="lead">บันทึกน้ำหนัก สัดส่วน และเปอร์เซ็นต์ไขมัน ทุกสัปดาห์ แล้วดูกราฟพัฒนาการของตัวเองแบบจับต้องได้ พร้อมโปรแกรมออกกำลังกายที่ออกแบบมาให้พอดีกับวันที่คุณเข้ายิมจริง</p>
+      <div class="hero-actions">
+        <a href="#calculator" class="btn-primary">คำนวณแคลอรีของฉัน</a>
+        <a href="#tracking" class="btn-secondary">ดูระบบบันทึกร่างกาย</a>
+      </div>
+    </div>
+
+    <div class="log-card" id="heroChart">
+      <div class="log-card-head">
+        <h3>น้ำหนักตัว — บันทึกล่าสุด</h3>
+        <div class="delta" id="chartDelta">-3.5 กก.</div>
+      </div>
+      <div class="chart-area">
+        <svg viewBox="0 0 320 160" preserveAspectRatio="none" id="weightSvg" aria-label="กราฟน้ำหนักตัว"></svg>
+      </div>
+      <div class="stat-row">
+        <div class="stat-chip"><div class="num" id="bmiChip">23.7</div><div class="lbl">BMI (จากแบบคำนวณ)</div></div>
+        <div class="stat-chip"><div class="num" id="fatChip">21.4%</div><div class="lbl">% ไขมัน (จากบันทึก)</div></div>
+        <div class="stat-chip"><div class="num" id="weekChip">8/8</div><div class="lbl">รายการที่บันทึก</div></div>
+      </div>
+      <div class="log-input-row">
+        <input type="number" id="newWeightInput" placeholder="บันทึกน้ำหนักวันนี้ (กก.)" step="0.1" min="30" max="250" aria-label="บันทึกน้ำหนักวันนี้">
+        <button class="btn-add" id="addWeightBtn" type="button">+ บันทึก</button>
+      </div>
+      <p class="hint">ทดลองกรอกน้ำหนัก แล้วกด "บันทึก" เพื่อดูกราฟอัปเดตทันที — เหมือนระบบจริงที่ผู้ใช้จะเห็นทุกครั้งที่ชั่งน้ำหนัก</p>
+    </div>
+  </div>
+</section>
+
+<section id="tracking" class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Advanced Tracking</div>
+      <h2>บันทึกร่างกายให้ลึกกว่าตัวเลขเดียว</h2>
+      <p>น้ำหนักอย่างเดียวบอกเรื่องราวได้ไม่หมด ระบบของเราเก็บทั้งภาพถ่าย สัดส่วน และองค์ประกอบร่างกาย เพื่อให้เห็นภาพรวมการเปลี่ยนแปลงที่ชัดเจนขึ้นทุกสัปดาห์</p>
+    </div>
+    <div class="track-grid">
+      <div class="track-card">
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+        </div>
+        <h3>Visual Progress</h3>
+        <p>อัปโหลดรูปถ่าย หน้าตรง ด้านข้าง และด้านหลัง ทุกสัปดาห์ เปรียบเทียบแบบเคียงข้างกันอัตโนมัติ</p>
+        <div class="photo-row">
+          <label class="photo-slot" data-slot="front" tabindex="0">
+            <input type="file" accept="image/*" class="photo-input">
+            <span class="ps-placeholder">ด้านหน้า<small>แตะเพื่ออัปโหลดรูป</small></span>
+            <span class="ps-label">ด้านหน้า</span>
+          </label>
+          <label class="photo-slot" data-slot="side" tabindex="0">
+            <input type="file" accept="image/*" class="photo-input">
+            <span class="ps-placeholder">ด้านข้าง<small>แตะเพื่ออัปโหลดรูป</small></span>
+            <span class="ps-label">ด้านข้าง</span>
+          </label>
+          <label class="photo-slot" data-slot="back" tabindex="0">
+            <input type="file" accept="image/*" class="photo-input">
+            <span class="ps-placeholder">ด้านหลัง<small>แตะเพื่ออัปโหลดรูป</small></span>
+            <span class="ps-label">ด้านหลัง</span>
+          </label>
+        </div>
+      </div>
+      <div class="track-card">
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+        </div>
+        <h3>Body Composition</h3>
+        <p>นอกจากน้ำหนัก บันทึก % ไขมัน มวลกล้ามเนื้อ และดูแนวโน้มแยกจากกัน เพื่อรู้ว่าน้ำหนักที่ลดลงคือไขมันหรือกล้ามเนื้อ</p>
+        <div class="measure">
+          <div class="measure-row"><span class="m-label">ไขมัน</span><div class="m-bar"><span id="fatBar" style="width:53%; background:#FF4B33;"></span></div><span class="m-val" id="fatVal">21.4%</span></div>
+          <div class="measure-row"><span class="m-label">กล้ามเนื้อ</span><div class="m-bar"><span id="muscleBar" style="width:70%; background:#1F9D55;"></span></div><span class="m-val" id="muscleVal">42.1%</span></div>
+        </div>
+        <div class="bc-input-grid">
+          <input type="number" id="fatInput" placeholder="% ไขมัน" min="3" max="60" step="0.1">
+          <input type="number" id="muscleInput" placeholder="% กล้ามเนื้อ" min="10" max="70" step="0.1">
+        </div>
+        <p class="bc-tip">วัดด้วยเครื่องชั่งวัดไขมัน (BIA) หรือเครื่อง InBody — เพื่อเทียบผลได้แม่นยำขึ้น ควรชั่งเวลาเดียวกันของวันทุกครั้ง เช่น ตอนเช้าหลังตื่นนอนก่อนทานอาหาร</p>
+        <button class="btn-add" id="saveBodyCompBtn" type="button">+ บันทึก</button>
+        <p class="bc-delta" id="bodyCompDelta"></p>
+        <div class="spark-wrap" id="bodyCompSparkWrap"></div>
+      </div>
+      <div class="track-card">
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M4 7h16M4 12h10M4 17h7"/></svg>
+        </div>
+        <h3>สัดส่วนร่างกาย</h3>
+        <p>วัดรอบอก เอว แขน และขา แล้วดูว่าจุดไหนเปลี่ยนแปลงเร็วที่สุดในรอบการฝึกของคุณ</p>
+        <div class="measure">
+          <div class="measure-row"><span class="m-label">เอว</span><div class="m-bar"><span id="waistBar" style="width:68%;"></span></div><span class="m-val" id="waistVal">82 ซม.</span></div>
+          <div class="measure-row"><span class="m-label">อก</span><div class="m-bar"><span id="chestBar" style="width:75%;"></span></div><span class="m-val" id="chestVal">98 ซม.</span></div>
+          <div class="measure-row"><span class="m-label">แขน</span><div class="m-bar"><span id="armBar" style="width:66%;"></span></div><span class="m-val" id="armVal">33 ซม.</span></div>
+          <div class="measure-row"><span class="m-label">ขา</span><div class="m-bar"><span id="legBar" style="width:0%;"></span></div><span class="m-val" id="legVal">—</span></div>
+        </div>
+        <div class="bc-input-grid">
+          <input type="number" id="waistInput" placeholder="เอว ซม." min="40" max="160" step="0.5">
+          <input type="number" id="chestInput" placeholder="อก ซม." min="50" max="170" step="0.5">
+          <input type="number" id="armInput" placeholder="แขน ซม." min="15" max="60" step="0.5">
+          <input type="number" id="legInput" placeholder="ขา ซม." min="25" max="90" step="0.5">
+        </div>
+        <p class="bc-tip">วัดด้วยสายวัดผ้า ไม่รัดแน่นจนยุบ — เอว: รอบสะดือ, อก: รอบหน้าอกแนวหัวนม, แขน: รอบกล้ามเนื้อต้นแขนช่วงกลาง, ขา: รอบต้นขาส่วนที่ใหญ่ที่สุด ควรวัดท่าและตำแหน่งเดิมทุกครั้งเพื่อให้เทียบกันได้</p>
+        <button class="btn-add" id="saveMeasureBtn" type="button">+ บันทึก</button>
+        <p class="bc-delta" id="measureDelta"></p>
+        <div class="spark-wrap" id="measureSparkWrap"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="goals" class="alt grid-bg">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Goal Setting</div>
+      <h2>ตั้งเป้าหมายน้ำหนัก แล้วดูว่าตามแผนปัจจุบันจะถึงเมื่อไหร่</h2>
+      <p>ใส่น้ำหนักเป้าหมายของคุณ ระบบจะเทียบกับน้ำหนักล่าสุดและอัตราการเปลี่ยนแปลงจากบันทึกที่ผ่านมา เพื่อประมาณว่าจะถึงเป้าเมื่อไหร่</p>
+    </div>
+    <div class="goal-grid-2">
+      <div class="goal-form">
+        <div class="field">
+          <label for="goalWeightInput">น้ำหนักเป้าหมาย (กก.)</label>
+          <input type="number" id="goalWeightInput" placeholder="เช่น 65" min="30" max="250" step="0.1">
+        </div>
+        <div class="field">
+          <label for="goalDateInput">อยากถึงเป้าภายในวันที่ (ไม่บังคับ)</label>
+          <input type="date" id="goalDateInput">
+        </div>
+        <button class="btn-primary" id="saveGoalBtn" type="button" style="width:100%; text-align:center; border:none;">บันทึกเป้าหมาย</button>
+      </div>
+      <div class="goal-result" id="goalResult">
+        <p class="meal-empty">ยังไม่ได้ตั้งเป้าหมาย — กรอกน้ำหนักเป้าหมายด้านซ้ายเพื่อเริ่มติดตาม</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="calculator">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">BMR &amp; TDEE Calculator</div>
+      <h2>รู้ก่อนว่าวันนี้ร่างกายคุณต้องการแคลอรีเท่าไหร่</h2>
+      <p>กรอกข้อมูลพื้นฐาน ระบบจะคำนวณอัตราการเผาผลาญพื้นฐาน (BMR) และพลังงานที่ใช้จริงต่อวัน (TDEE) พร้อมแนะนำแคลอรีตามเป้าหมายของคุณ</p>
+    </div>
+    <div class="calc-grid">
+      <div class="calc-form">
+        <div class="field">
+          <label>เพศ</label>
+          <div class="seg">
+            <label><input type="radio" name="gender" value="male" checked><span>ชาย</span></label>
+            <label><input type="radio" name="gender" value="female"><span>หญิง</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="age">อายุ (ปี)</label>
+          <input type="number" id="age" value="28" min="15" max="90">
+        </div>
+        <div class="field">
+          <label for="weight">น้ำหนัก (กก.)</label>
+          <input type="number" id="weight" value="70" min="30" max="250" step="0.1">
+        </div>
+        <div class="field">
+          <label for="height">ส่วนสูง (ซม.)</label>
+          <input type="number" id="height" value="172" min="120" max="230">
+        </div>
+        <div class="field">
+          <label for="activity">ระดับกิจกรรม</label>
+          <select id="activity">
+            <option value="1.2">ไม่ออกกำลังกาย / นั่งทำงานตลอดวัน</option>
+            <option value="1.375">ออกกำลังกายเบา 1-3 วัน/สัปดาห์</option>
+            <option value="1.55" selected>ออกกำลังกายปานกลาง 3-5 วัน/สัปดาห์</option>
+            <option value="1.725">ออกกำลังกายหนัก 6-7 วัน/สัปดาห์</option>
+            <option value="1.9">ออกกำลังกายหนักมาก + งานใช้แรง</option>
+          </select>
+        </div>
+      </div>
+      <div class="calc-results">
+        <div class="result-block">
+          <div class="lbl">BMR — พลังงานพื้นฐาน</div>
+          <div class="val"><span id="bmrVal">1680</span><span> kcal/วัน</span></div>
+        </div>
+        <div class="result-block">
+          <div class="lbl">TDEE — พลังงานที่ใช้จริง</div>
+          <div class="val"><span id="tdeeVal">2604</span><span> kcal/วัน</span></div>
+        </div>
+        <div class="result-block">
+          <div class="lbl">แคลอรีตามเป้าหมาย</div>
+          <div class="goal-grid">
+            <div class="goal-cell highlight" data-target="cut" tabindex="0" role="button">
+              <div class="gname">ลดน้ำหนัก</div>
+              <div class="gval" id="cutVal">2104</div>
+            </div>
+            <div class="goal-cell" data-target="maintain" tabindex="0" role="button">
+              <div class="gname">คงที่</div>
+              <div class="gval" id="maintainVal">2604</div>
+            </div>
+            <div class="goal-cell" data-target="bulk" tabindex="0" role="button">
+              <div class="gname">เพิ่มกล้ามเนื้อ</div>
+              <div class="gval" id="bulkVal">2904</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-panel">
+      <div class="insight-bmi">
+        <div class="lbl-small">BMI ของคุณ</div>
+        <div class="bmi-value" id="bmiVal2">23.7</div>
+        <div class="bmi-badge" id="bmiBadge">น้ำหนักเกิน</div>
+        <div class="bmi-scale">
+          <div class="bmi-scale-bar">
+            <span class="seg-under"></span>
+            <span class="seg-normal"></span>
+            <span class="seg-over"></span>
+            <span class="seg-obese1"></span>
+            <span class="seg-obese2"></span>
+            <div class="bmi-marker" id="bmiMarker" style="left:50%;"></div>
+          </div>
+          <div class="bmi-scale-labels">
+            <span>15</span><span>18.5</span><span>23</span><span>25</span><span>30</span><span>35</span>
+          </div>
+        </div>
+        <p class="ideal-weight">น้ำหนักที่เหมาะสมสำหรับส่วนสูงนี้คือ <span id="idealWeight"><strong>54.7 - 67.8</strong> กก.</span></p>
+      </div>
+      <div class="insight-detail">
+        <div class="reco-box" id="recoText">กำลังคำนวณคำแนะนำของคุณ...</div>
+        <div>
+          <div class="macro-head">
+            <div class="lbl-small">สารอาหารแนะนำต่อวัน</div>
+            <div class="target-name" id="targetName">เป้าหมาย: ลดน้ำหนัก</div>
+          </div>
+          <div class="macro-grid">
+            <div class="macro-card"><div class="mval" id="proteinG">140</div><div class="munit">กรัม</div><div class="mlbl">โปรตีน</div></div>
+            <div class="macro-card"><div class="mval" id="carbG">180</div><div class="munit">กรัม</div><div class="mlbl">คาร์โบไฮเดรต</div></div>
+            <div class="macro-card"><div class="mval" id="fatG">58</div><div class="munit">กรัม</div><div class="mlbl">ไขมัน</div></div>
+          </div>
+        </div>
+        <div class="water-note" id="waterNote">แนะนำดื่มน้ำประมาณ <strong>2.3 ลิตร/วัน</strong></div>
+        <button class="btn-primary cta-premium" id="viewProgramBtn" type="button">ดูโปรแกรมที่เหมาะกับคุณ →</button>
+      </div>
+    </div>
+    <p class="disclaimer">* ผลลัพธ์ทั้งหมดคำนวณจากสูตรประมาณค่าทั่วไป (Mifflin-St Jeor และเกณฑ์ BMI สำหรับคนเอเชีย) เพื่อใช้เป็นแนวทางเบื้องต้นเท่านั้น ไม่สามารถใช้แทนคำวินิจฉัยทางการแพทย์ หากมีโรคประจำตัวหรือข้อสงสัยด้านสุขภาพ ควรปรึกษาแพทย์หรือผู้เชี่ยวชาญก่อนเริ่มโปรแกรมออกกำลังกายหรือควบคุมอาหาร</p>
+  </div>
+</section>
+
+<section id="programs" class="alt grid-bg">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Workout Routine Generator</div>
+      <h2>เลือกเป้าหมายและจำนวนวัน รับโปรแกรมทันที</h2>
+      <p>ไม่ต้องเดาเองว่าควรเล่นอะไรวันไหน ระบบจะจัดโปรแกรมให้เหมาะกับเป้าหมายและตารางเวลาที่คุณมี</p>
+    </div>
+    <div class="program-controls">
+      <div class="pill-group" id="goalPills">
+        <button class="pill active" data-goal="lose">ลดน้ำหนัก</button>
+        <button class="pill" data-goal="gain">เพิ่มกล้ามเนื้อ</button>
+        <button class="pill" data-goal="tone">กระชับสัดส่วน</button>
+      </div>
+      <div class="pill-group" id="dayPills">
+        <button class="pill active" data-days="3">3 วัน/สัปดาห์</button>
+        <button class="pill" data-days="4">4 วัน/สัปดาห์</button>
+        <button class="pill" data-days="5">5 วัน/สัปดาห์</button>
+      </div>
+    </div>
+    <div class="plan-title" id="planTitle"></div>
+    <div class="plan-days" id="planDays"></div>
+  </div>
+</section>
+
+<section id="meals">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Macro Tracker</div>
+      <h2>วันนี้คุณทานพอดีกับเป้าหมายแล้วหรือยัง?</h2>
+      <p>บันทึกแต่ละมื้อที่ทาน เทียบกับแคลอรีเป้าหมายที่คำนวณไว้ด้านบน เพื่อดูว่าวันนี้ทานพอดี ทานน้อยไป หรือทานเกินไปแล้ว</p>
+    </div>
+    <div class="meal-grid">
+      <div class="meal-summary">
+        <div class="lbl-small">เป้าหมายแคลอรีวันนี้ <span id="mealTargetLabel">(ลดน้ำหนัก)</span></div>
+        <div class="meal-target"><span id="mealTarget">2104</span> kcal</div>
+        <div class="meal-bar"><div class="meal-bar-fill" id="mealBarFill"></div></div>
+        <div class="meal-stats-row">
+          <div>
+            <div class="lbl-small">ทานไปแล้ว</div>
+            <div class="meal-num" id="mealConsumed">0</div>
+          </div>
+          <div>
+            <div class="lbl-small">เหลือสำหรับวันนี้</div>
+            <div class="meal-num" id="mealRemaining">2104</div>
+          </div>
+        </div>
+        <p class="meal-hint" id="mealHint">ยังไม่มีรายการอาหารวันนี้ — ลองเพิ่มมื้อแรกของคุณดูสิ</p>
+        <p class="meal-cta">อยากให้ระบบแยกโปรตีน/คาร์บ/ไขมันของแต่ละมื้อ และเตือนเมื่อสารอาหารไม่ครบอัตโนมัติ? <a href="#pricing">ปลดล็อกด้วย Premium</a></p>
+      </div>
+      <div class="meal-input-area">
+        <div class="quick-add">
+          <div class="lbl-small">เพิ่มอย่างรวดเร็ว (ค่าประมาณ)</div>
+          <div class="quick-chips" id="quickChips"></div>
+        </div>
+        <div class="meal-form">
+          <input type="text" id="mealName" placeholder="ชื่อเมนู เช่น ข้าวผัดไก่">
+          <input type="number" id="mealKcal" placeholder="แคลอรี (kcal)" min="0">
+          <select id="mealTime">
+            <option value="เช้า">เช้า</option>
+            <option value="กลางวัน">กลางวัน</option>
+            <option value="เย็น">เย็น</option>
+            <option value="ของว่าง">ของว่าง</option>
+          </select>
+          <button class="btn-add" id="addMealBtn" type="button">+ เพิ่ม</button>
+        </div>
+        <ul class="meal-list" id="mealList"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="library">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Exercise Library</div>
+      <h2>คลังท่าออกกำลังกาย พร้อมฟอร์มที่ถูกต้อง</h2>
+      <p>แต่ละท่ามีคลิปสาธิตสั้นๆ และจุดที่ต้องระวัง เพื่อให้คุณเล่นได้อย่างปลอดภัยและได้ผลลัพธ์เต็มที่</p>
+    </div>
+    <div class="lib-grid">
+      <div class="lib-card" data-ex="squat" tabindex="0" role="button">
+        <div class="lib-thumb"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><path d="M12 7v6M7 9l5-2 5 2M9 13l-2 7M15 13l2 7"/></svg></div>
+        <div class="lib-body"><div class="lib-tag">ขา / สะโพก</div><h4>Barbell Squat</h4><span class="lib-link">▶ ดูฟอร์มที่ถูกต้อง</span></div>
+      </div>
+      <div class="lib-card" data-ex="bench" tabindex="0" role="button">
+        <div class="lib-thumb"><svg viewBox="0 0 24 24"><path d="M4 12h16M8 8v8M16 8v8"/></svg></div>
+        <div class="lib-body"><div class="lib-tag">อก / ไหล่</div><h4>Bench Press</h4><span class="lib-link">▶ ดูฟอร์มที่ถูกต้อง</span></div>
+      </div>
+      <div class="lib-card" data-ex="latpull" tabindex="0" role="button">
+        <div class="lib-thumb"><svg viewBox="0 0 24 24"><path d="M6 4v16M18 4v16M6 10h12M6 14h12"/></svg></div>
+        <div class="lib-body"><div class="lib-tag">หลัง</div><h4>Lat Pulldown</h4><span class="lib-link">▶ ดูฟอร์มที่ถูกต้อง</span></div>
+      </div>
+      <div class="lib-card" data-ex="rdl" tabindex="0" role="button">
+        <div class="lib-thumb"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg></div>
+        <div class="lib-body"><div class="lib-tag">ขาหลัง / สะโพก</div><h4>Romanian Deadlift</h4><span class="lib-link">▶ ดูฟอร์มที่ถูกต้อง</span></div>
+      </div>
+      <div class="lib-card" data-ex="plank" tabindex="0" role="button">
+        <div class="lib-thumb"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></div>
+        <div class="lib-body"><div class="lib-tag">แกนกลางลำตัว</div><h4>Plank</h4><span class="lib-link">▶ ดูฟอร์มที่ถูกต้อง</span></div>
+      </div>
+      <div class="lib-card" data-ex="shoulder" tabindex="0" role="button">
+        <div class="lib-thumb"><svg viewBox="0 0 24 24"><path d="M4 4l8 8 8-8M4 20l8-8 8 8"/></svg></div>
+        <div class="lib-body"><div class="lib-tag">แขน / ไหล่</div><h4>Dumbbell Shoulder Press</h4><span class="lib-link">▶ ดูฟอร์มที่ถูกต้อง</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Free vs Premium</div>
+      <h2>เริ่มฟรี แล้วอัปเกรดเมื่อพร้อมไปต่อ</h2>
+      <p>ใช้งานฟีเจอร์หลักได้โดยไม่มีค่าใช้จ่าย และปลดล็อกการวิเคราะห์เชิงลึกเมื่อเป็น Premium</p>
+    </div>
+
+    <!-- Plan toggle -->
+    <div style="display:flex; justify-content:center; margin-bottom:32px;">
+      <div style="display:flex; background:var(--bg); border:1.5px solid var(--line); border-radius:999px; padding:4px; gap:4px;">
+        <button class="plan-toggle active" id="toggleMonthly" type="button">รายเดือน</button>
+        <button class="plan-toggle" id="toggleYearly" type="button">รายปี <span style="background:var(--highlight); color:var(--ink); font-size:.68rem; padding:2px 7px; border-radius:999px; font-weight:700; margin-left:4px;">ประหยัด 36%</span></button>
+      </div>
+    </div>
+
+    <div class="price-grid">
+      <div class="price-card free">
+        <div class="price-name">Free</div>
+        <div class="price-cost">฿0 <span>/ ตลอดไป</span></div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="#1F9D55"><path d="M5 12l5 5L20 6"/></svg>บันทึกน้ำหนักได้ <strong>10 รายการ</strong> ล่าสุด</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="#1F9D55"><path d="M5 12l5 5L20 6"/></svg>คำนวณ BMI / BMR / TDEE</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="#1F9D55"><path d="M5 12l5 5L20 6"/></svg>โปรแกรมออกกำลังกายพื้นฐาน</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="#1F9D55"><path d="M5 12l5 5L20 6"/></svg>คลังท่าออกกำลังกายพร้อมสาธิต</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="#1F9D55"><path d="M5 12l5 5L20 6"/></svg>นับแคลอรี่มื้ออาหารรายวัน</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="#CBD8E3"><path d="M18 6L6 18M6 6l12 12"/></svg><span style="color:var(--ink-soft)">ประวัติย้อนหลังไม่จำกัด</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="#CBD8E3"><path d="M18 6L6 18M6 6l12 12"/></svg><span style="color:var(--ink-soft)">Export ข้อมูลเป็น CSV</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="#CBD8E3"><path d="M18 6L6 18M6 6l12 12"/></svg><span style="color:var(--ink-soft)">กราฟแนวโน้มระยะยาว</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="#CBD8E3"><path d="M18 6L6 18M6 6l12 12"/></svg><span style="color:var(--ink-soft)">โปรแกรม Personalized</span></li>
+        </ul>
+        <button class="btn-secondary" id="freeSignupBtn" type="button">เริ่มใช้งานฟรี</button>
+      </div>
+
+      <div class="price-card premium">
+        <div class="price-name">Premium</div>
+        <div class="price-cost" id="premiumPriceDisplay">฿129 <span>/ เดือน</span></div>
+        <div id="premiumYearlyNote" style="display:none; font-size:.8rem; color:#9FB3C4; margin:-10px 0 10px;">เทียบเท่า ฿82.50/เดือน — จ่ายครั้งเดียว ฿990/ปี</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg>ทุกอย่างใน Free</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg><strong>ประวัติย้อนหลังไม่จำกัด</strong> — น้ำหนัก สัดส่วน อาหาร</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg><strong>กราฟแนวโน้มระยะยาว</strong> รายเดือน/รายปี</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg><strong>โปรแกรม Personalized</strong> ปรับตามผลลัพธ์จริง</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg><strong>Export CSV</strong> ส่งให้เทรนเนอร์ส่วนตัว</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg>เปรียบเทียบรูป Side-by-side อัตโนมัติ</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg>Sync ข้ามอุปกรณ์ทุกเครื่อง</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg>รองรับหลายช่องทางชำระเงิน</li>
+        </ul>
+        <button class="btn-secondary" id="premiumUpgradeBtn" type="button">อัปเกรดเป็น Premium</button>
+        <div id="premiumStatusBadge" style="display:none; margin-top:12px; text-align:center; font-size:.82rem; color:var(--highlight); font-weight:700;">✓ คุณเป็นสมาชิก Premium อยู่แล้ว</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-inner">
+    <div class="logo"><span class="bar"></span>FITLOG</div>
+    <p>© 2026 FITLOG — สมุดบันทึกการออกกำลังกายของคุณ</p>
+    <div class="foot-links">
+      <a href="#">มารยาทการใช้ยิม</a>
+      <a href="#">ติดต่อเรา</a>
+      <a href="#">นโยบายความเป็นส่วนตัว</a>
+    </div>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="exerciseModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-box">
+    <button class="modal-close" id="modalClose" type="button" aria-label="ปิด">✕</button>
+    <div class="modal-thumb" id="modalThumb">
+      <span class="gif-badge">GIF DEMO</span>
+      <svg class="fig" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle class="fig-head" cx="50" cy="18" r="7"/>
+        <line class="fig-torso" x1="50" y1="25" x2="50" y2="58"/>
+        <g class="fig-arms">
+          <line x1="50" y1="32" x2="32" y2="48"/>
+          <line x1="50" y1="32" x2="68" y2="48"/>
+        </g>
+        <g class="fig-legs">
+          <line x1="50" y1="58" x2="38" y2="88"/>
+          <line x1="50" y1="58" x2="62" y2="88"/>
+        </g>
+      </svg>
+    </div>
+    <div class="modal-body">
+      <div class="lib-tag" id="modalTag"></div>
+      <h3 id="modalTitle"></h3>
+      <p id="modalDesc"></p>
+      <div class="modal-sets" id="modalSets"></div>
+      <h4>ขั้นตอนการเล่น</h4>
+      <ol id="modalSteps"></ol>
+      <h4>ข้อควรระวัง</h4>
+      <ul id="modalMistakes"></ul>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="modal-box auth-box">
+    <button class="modal-close" id="authClose" type="button" aria-label="ปิด">✕</button>
+    <div class="modal-body">
+      <div class="lib-tag">SUPABASE LOGIN</div>
+      <h3 id="authTitle">เข้าสู่ระบบ</h3>
+      <p>เข้าสู่ระบบหรือสมัครสมาชิก เพื่อให้ข้อมูลของคุณ (น้ำหนัก รูป สัดส่วน มื้ออาหาร เป้าหมาย) sync และเปิดดูได้จากทุกอุปกรณ์</p>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="authTabLogin" type="button">เข้าสู่ระบบ</button>
+        <button class="auth-tab" id="authTabSignup" type="button">สมัครสมาชิก</button>
+      </div>
+      <div class="auth-fields">
+        <input type="email" id="authEmail" placeholder="อีเมล">
+        <input type="password" id="authPassword" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)">
+      </div>
+      <button class="btn-primary" id="authSubmitBtn" type="button" style="width:100%; text-align:center; border:none;">เข้าสู่ระบบ</button>
+      <div class="auth-note">
+        * เชื่อมต่อกับ Supabase จริง — ถ้ายังไม่ได้ใส่ค่า SUPABASE_URL / SUPABASE_ANON_KEY ในโค้ด ระบบจะแจ้งเตือนให้ตั้งค่าก่อน เมื่อเข้าสู่ระบบสำเร็จ ข้อมูลทั้งหมดจะ sync ขึ้นฐานข้อมูล และดึงกลับมาได้จากทุกอุปกรณ์ที่ล็อกอินด้วยบัญชีเดียวกัน
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="checkoutModal" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+  <div class="modal-box checkout-box" style="position:relative;">
+    <button class="modal-close" id="checkoutClose" type="button" aria-label="ปิด">✕</button>
+
+    <!-- Processing overlay -->
+    <div class="processing-overlay" id="processingOverlay">
+      <div class="spinner"></div>
+      <p style="font-weight:600;">กำลังดำเนินการชำระเงิน...</p>
+    </div>
+
+    <div class="modal-body">
+      <!-- Step 1: เลือกแพ็กเกจ + ช่องทางชำระเงิน -->
+      <div id="checkoutStep">
+        <div class="lib-tag">ชำระเงินจริง</div>
+        <h3 id="checkoutTitle">อัปเกรดเป็น Premium</h3>
+
+        <div class="checkout-plan-row">
+          <span class="plan-name" id="checkoutPlanName">Premium รายเดือน</span>
+          <span class="plan-price" id="checkoutPlanPrice">฿129</span>
+        </div>
+
+        <!-- เลือกช่องทางชำระเงิน -->
+        <div class="lbl-small" style="margin-bottom:10px;">เลือกช่องทางชำระเงิน</div>
+        <div class="pay-tabs">
+          <button class="pay-tab active" data-method="promptpay" type="button">
+            <span class="pay-icon">📱</span>พร้อมเพย์
+          </button>
+          <button class="pay-tab" data-method="credit_card" type="button">
+            <span class="pay-icon">💳</span>บัตรเครดิต
+          </button>
+          <button class="pay-tab" data-method="truemoney" type="button">
+            <span class="pay-icon">🟠</span>TrueMoney
+          </button>
+          <button class="pay-tab" data-method="stripe" type="button">
+            <span class="pay-icon">🌐</span>Stripe
+          </button>
+        </div>
+
+        <!-- PromptPay -->
+        <div id="payForm_promptpay">
+          <p style="font-size:.88rem; color:var(--ink-soft); margin-bottom:14px;">กดปุ่มด้านล่างเพื่อสร้าง QR Code พร้อมเพย์ สแกนจ่ายผ่านแอปธนาคารได้ทันที</p>
+          <div id="promptpayQR" style="display:none; text-align:center; margin-bottom:14px;">
+            <div id="qrImage" style="width:200px; height:200px; margin:0 auto 10px; background:var(--bg); border:1px solid var(--line); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:.8rem; color:var(--ink-soft);">กำลังสร้าง QR...</div>
+            <p style="font-size:.8rem; color:var(--ink-soft);">QR Code หมดอายุใน 15 นาที</p>
+          </div>
+        </div>
+
+        <!-- Credit Card (Omise) -->
+        <div id="payForm_credit_card" style="display:none;">
+          <div class="auth-fields">
+            <input type="text" id="cardNumber" placeholder="หมายเลขบัตร 16 หลัก" maxlength="19" inputmode="numeric">
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5">
+              <input type="text" id="cardCVC" placeholder="CVC" maxlength="4" inputmode="numeric">
+            </div>
+            <input type="text" id="cardName" placeholder="ชื่อบนบัตร">
+          </div>
+          <p style="font-size:.72rem; color:var(--ink-soft); margin-top:4px;">🔒 ข้อมูลบัตรเข้ารหัสผ่าน Omise โดยตรง ไม่ผ่านเซิร์ฟเวอร์ของเรา</p>
+        </div>
+
+        <!-- TrueMoney -->
+        <div id="payForm_truemoney" style="display:none;">
+          <div class="auth-fields">
+            <input type="tel" id="trueMoneyPhone" placeholder="เบอร์โทรศัพท์ที่ผูก TrueMoney Wallet" maxlength="10">
+          </div>
+          <p style="font-size:.8rem; color:var(--ink-soft);">ระบบจะส่ง OTP ไปยังเบอร์ที่ระบุ</p>
+        </div>
+
+        <!-- Stripe -->
+        <div id="payForm_stripe" style="display:none;">
+          <div class="auth-fields">
+            <input type="text" id="stripeCardNumber" placeholder="หมายเลขบัตร 16 หลัก" maxlength="19" inputmode="numeric">
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="stripeCardExpiry" placeholder="MM/YY" maxlength="5">
+              <input type="text" id="stripeCardCVC" placeholder="CVC" maxlength="4" inputmode="numeric">
+            </div>
+          </div>
+          <p style="font-size:.72rem; color:var(--ink-soft); margin-top:4px;">🔒 ผ่าน Stripe — รองรับบัตรจากทุกประเทศ</p>
+        </div>
+
+        <button class="btn-primary cta-premium" id="confirmPayBtn" type="button" style="margin-top:16px;">ชำระเงิน</button>
+
+        <div class="auth-note" style="margin-top:14px;">
+          ⚙️ <strong>ตั้งค่าก่อนใช้งานจริง:</strong> ต้องใส่ Omise Public Key และ Supabase Edge Function URL ในโค้ด (ดูส่วน PAYMENT_CONFIG ในสคริปต์) — ไม่งั้นปุ่มจะแจ้งเตือนให้ตั้งค่าก่อน
+        </div>
+      </div>
+
+      <!-- Step 2: PromptPay รอยืนยัน -->
+      <div id="checkoutPending" style="display:none; text-align:center; padding:8px 0;">
+        <div style="font-size:2.5rem; margin-bottom:12px;">⏳</div>
+        <h3>รอการยืนยันจากธนาคาร</h3>
+        <p style="color:var(--ink-soft); font-size:.9rem; margin:10px 0 20px;">สแกน QR Code ด้านบนแล้วชำระเงิน ระบบจะอัปเดตโดยอัตโนมัติเมื่อได้รับยืนยัน</p>
+        <button class="btn-secondary" id="checkPendingBtn" type="button">ตรวจสอบสถานะ</button>
+      </div>
+
+      <!-- Step 3: สำเร็จ -->
+      <div class="checkout-success" id="checkoutSuccess" style="display:none;">
+        <div class="check-icon">✓</div>
+        <h3>ชำระเงินสำเร็จ!</h3>
+        <p>บัญชีของคุณได้รับการอัปเกรดเป็น <strong>Premium</strong> เรียบร้อยแล้ว ข้อมูลทุกอย่างยังเก็บไว้ครบ พร้อมใช้งานฟีเจอร์ทั้งหมดได้เลย</p>
+        <div style="background:var(--bg); border-radius:10px; padding:14px; margin-bottom:18px; font-size:.88rem; text-align:left;">
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div>✅ ประวัติย้อนหลังไม่จำกัด</div>
+            <div>✅ Export ข้อมูลเป็น CSV</div>
+            <div>✅ กราฟแนวโน้มระยะยาว</div>
+            <div>✅ โปรแกรม Personalized</div>
+          </div>
+        </div>
+        <button class="btn-primary cta-premium" id="checkoutDoneBtn" type="button">เริ่มใช้งาน Premium 🎉</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // =====================================================================
+  // ===== Supabase setup =====
+  // 1) สร้างโปรเจกต์ที่ https://supabase.com (ฟรี)
+  // 2) เปิด SQL Editor แล้ววางไฟล์ supabase_schema.sql ที่ให้มา -> กด Run
+  // 3) ไปที่ Project Settings -> API คัดลอก "Project URL" และ "anon public key"
+  //    มาใส่ในตัวแปร 2 ตัวด้านล่างนี้
+  // 4) (แนะนำ) ใน Authentication -> Providers ปิด "Confirm email" ไว้ก่อน
+  //    ระหว่างทดสอบ จะได้ไม่ต้องเช็คอีเมลทุกครั้งที่สมัคร
+  // ถ้าปล่อยว่างไว้ เว็บจะยังทำงานได้ปกติแต่เก็บข้อมูลในเบราว์เซอร์นี้
+  // เท่านั้น (ไม่ sync ข้ามอุปกรณ์) — ปุ่ม "เข้าสู่ระบบ" จะแจ้งเตือนให้ตั้งค่าก่อน
+  // =====================================================================
+  const SUPABASE_URL = 'https://zuogjkzvoawuefbehffe.supabase.co';       // เช่น 'https://xxxxxxxx.supabase.co'
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1b2dqa3p2b2F3dWVmYmVoZmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzEzMjEsImV4cCI6MjA5Njg0NzMyMX0.7-vUl001siHNOh1OF1RXmvNtbD1Xqgx73eNWnLbi-YE';  // anon public key จาก Project Settings -> API
+
+  const supabaseClient = (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase)
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+  let currentUser = null;
+  const SYNC_KEYS = ['weight','photos','bodyComp','bodyCompHistory','measurements','measureHistory','calc','meals','goal','premium'];
+
+  // ===== Local storage persistence (+ Supabase sync when logged in) =====
+  const LS_PREFIX = 'fitlog_demo_';
+  function saveLS(key, value){
+    try{ localStorage.setItem(LS_PREFIX+key, JSON.stringify(value)); }
+    catch(e){ return false; }
+    if(supabaseClient && currentUser){
+      supabaseClient.from('user_data').upsert({
+        user_id: currentUser.id,
+        data_key: key,
+        data_value: value,
+        updated_at: new Date().toISOString(),
+      }).then(({error})=>{ if(error) console.error('Sync error:', error.message); });
+    }
+    return true;
+  }
+  function loadLS(key, fallback){
+    try{
+      const raw = localStorage.getItem(LS_PREFIX+key);
+      return raw !== null ? JSON.parse(raw) : fallback;
+    }catch(e){ return fallback; }
+  }
+
+  // ===== Toast notification =====
+  const toastEl = document.getElementById('toast');
+  let toastTimer = null;
+  function showToast(msg, duration = 3200){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> toastEl.classList.remove('show'), duration);
+  }
+
+  // ===== Weight tracking chart =====
+  let weightData = loadLS('weight', []);
+  const weightSvg = document.getElementById('weightSvg');
+  const heroChart = document.getElementById('heroChart');
+
+  function renderChart(){
+    const n = weightData.length;
+
+    if(n === 0){
+      weightSvg.innerHTML = `
+        <g stroke="#D7E0EA" stroke-width="1">
+          <line x1="0" y1="20" x2="320" y2="20"/>
+          <line x1="0" y1="60" x2="320" y2="60"/>
+          <line x1="0" y1="100" x2="320" y2="100"/>
+          <line x1="0" y1="140" x2="320" y2="140"/>
+        </g>
+        <text class="axis-label" x="20" y="76" font-size="12" fill="#9FB3C4">ยังไม่มีข้อมูลน้ำหนัก</text>
+        <text class="axis-label" x="20" y="94" font-size="12" fill="#9FB3C4">บันทึกน้ำหนักแรกของคุณด้านล่าง</text>
+      `;
+      const deltaEl = document.getElementById('chartDelta');
+      deltaEl.textContent = '–';
+      deltaEl.style.color = 'var(--ink-soft)';
+      document.getElementById('weekChip').textContent = '0/0';
+      return;
+    }
+
+    const min = Math.min(...weightData);
+    const max = Math.max(...weightData);
+    const range = (max - min) || 1;
+    const yTop = 30, yBottom = 130;
+    const yOf = v => yTop + (max - v) / range * (yBottom - yTop);
+    const xOf = i => n > 1 ? i * (320 / (n - 1)) : 160;
+
+    const pts = weightData.map((v,i)=>[xOf(i), yOf(v)]);
+    const polyPts = pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+    const pathD = 'M' + pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L');
+    const fillD = pathD + ` L${xOf(n-1).toFixed(1)},160 L${xOf(0).toFixed(1)},160 Z`;
+    const dots = weightData.map((v,i)=>`<circle class="chart-dot" cx="${xOf(i).toFixed(1)}" cy="${yOf(v).toFixed(1)}" r="${n>8?3:3.5}"/>`).join('');
+
+    weightSvg.innerHTML = `
+      <g stroke="#D7E0EA" stroke-width="1">
+        <line x1="0" y1="20" x2="320" y2="20"/>
+        <line x1="0" y1="60" x2="320" y2="60"/>
+        <line x1="0" y1="100" x2="320" y2="100"/>
+        <line x1="0" y1="140" x2="320" y2="140"/>
+      </g>
+      <path class="chart-fill" d="${fillD}"/>
+      <polyline class="chart-line" points="${polyPts}"/>
+      ${dots}
+      <text class="axis-label" x="2" y="${(yOf(weightData[0])-8).toFixed(1)}">${weightData[0].toFixed(1)} กก.</text>
+      <text class="axis-label" x="${Math.max(0, xOf(n-1)-46).toFixed(1)}" y="${(yOf(weightData[n-1])+16).toFixed(1)}">${weightData[n-1].toFixed(1)} กก.</text>
+      <text class="axis-label" x="0" y="156">เริ่มต้น</text>
+      <text class="axis-label" x="288" y="156">ล่าสุด</text>
+    `;
+
+    // replay the draw-in animation
+    heroChart.classList.remove('in-view');
+    requestAnimationFrame(()=> requestAnimationFrame(()=> heroChart.classList.add('in-view')));
+
+    const delta = weightData[0] - weightData[n-1];
+    const deltaEl = document.getElementById('chartDelta');
+    deltaEl.textContent = (delta >= 0 ? '-' : '+') + Math.abs(delta).toFixed(1) + ' กก.';
+    deltaEl.style.color = delta >= 0 ? '#1F9D55' : 'var(--accent)';
+    document.getElementById('weekChip').textContent = `${n}/${n}`;
+  }
+
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in-view'); });
+  }, {threshold:.3});
+  io.observe(heroChart);
+  renderChart();
+
+  document.getElementById('addWeightBtn').addEventListener('click', ()=>{
+    const input = document.getElementById('newWeightInput');
+    const val = parseFloat(input.value);
+    if(!val || val < 30 || val > 250){
+      input.focus();
+      return;
+    }
+    weightData.push(val);
+    if(weightData.length > 10) weightData.shift();
+    weightEl.value = val; // sync into the calculator too
+    input.value = '';
+    renderChart();
+    saveLS('weight', weightData);
+    calc();
+    if(typeof renderGoal === 'function') renderGoal();
+    showToast('บันทึกน้ำหนักแล้ว — ข้อมูลถูกเก็บไว้ในเบราว์เซอร์นี้');
+  });
+
+  // ===== Visual progress — photo upload preview (saved to this browser) =====
+  let photoData = loadLS('photos', {});
+  document.querySelectorAll('.photo-slot').forEach(slot=>{
+    const key = slot.dataset.slot;
+    if(photoData[key]){
+      slot.style.backgroundImage = `url(${photoData[key]})`;
+      slot.classList.add('has-image');
+    }
+  });
+  document.querySelectorAll('.photo-input').forEach(input=>{
+    input.addEventListener('change', e=>{
+      const file = e.target.files && e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = ev=>{
+        const slot = input.closest('.photo-slot');
+        const key = slot.dataset.slot;
+        slot.style.backgroundImage = `url(${ev.target.result})`;
+        slot.classList.add('has-image');
+        photoData[key] = ev.target.result;
+        if(saveLS('photos', photoData)){
+          showToast('บันทึกรูปแล้ว — เก็บไว้ในเบราว์เซอร์นี้');
+        }else{
+          showToast('รูปมีขนาดใหญ่เกินไป บันทึกอัตโนมัติไม่สำเร็จ');
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  // ===== Mini trend sparkline builder =====
+  function buildSparkline(series){
+    const w = 300, h = 42, pad = 5;
+    let svg = '';
+    series.forEach(s=>{
+      const data = s.data;
+      const n = data.length;
+      if(n < 2) return;
+      const min = Math.min(...data);
+      const max = Math.max(...data);
+      const range = (max - min) || 1;
+      const xOf = i => i * (w / (n - 1));
+      const yOf = v => pad + (max - v) / range * (h - pad*2);
+      const pts = data.map((v,i)=>`${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`).join(' ');
+      svg += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+      data.forEach((v,i)=>{
+        svg += `<circle cx="${xOf(i).toFixed(1)}" cy="${yOf(v).toFixed(1)}" r="2.5" fill="${s.color}"/>`;
+      });
+    });
+    return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${svg}</svg>`;
+  }
+
+  // ===== Body composition (% ไขมัน / % กล้ามเนื้อ) =====
+  const BC_MAX = {fat: 40, muscle: 60};
+  let bodyComp = loadLS('bodyComp', {fat: 21.4, muscle: 42.1});
+  let bodyCompHistory = loadLS('bodyCompHistory', []);
+
+  function renderBodyCompSpark(){
+    const wrap = document.getElementById('bodyCompSparkWrap');
+    if(bodyCompHistory.length < 2){
+      wrap.innerHTML = '<p class="spark-empty">บันทึกอย่างน้อย 2 ครั้งเพื่อดูกราฟแนวโน้ม</p>';
+      return;
+    }
+    const fatData = bodyCompHistory.map(h=>h.fat);
+    const muscleData = bodyCompHistory.map(h=>h.muscle);
+    wrap.innerHTML = `
+      <div class="spark-legend">
+        <span><span class="spark-dot" style="background:#FF4B33;"></span>% ไขมัน</span>
+        <span><span class="spark-dot" style="background:#1F9D55;"></span>% กล้ามเนื้อ</span>
+      </div>
+    ` + buildSparkline([{data:fatData, color:'#FF4B33'},{data:muscleData, color:'#1F9D55'}]);
+  }
+
+  function renderBodyComp(){
+    document.getElementById('fatVal').textContent = bodyComp.fat.toFixed(1) + '%';
+    document.getElementById('muscleVal').textContent = bodyComp.muscle.toFixed(1) + '%';
+    document.getElementById('fatBar').style.width = Math.min(100, (bodyComp.fat / BC_MAX.fat) * 100) + '%';
+    document.getElementById('muscleBar').style.width = Math.min(100, (bodyComp.muscle / BC_MAX.muscle) * 100) + '%';
+    document.getElementById('fatChip').textContent = bodyComp.fat.toFixed(1) + '%';
+  }
+  renderBodyComp();
+  renderBodyCompSpark();
+
+  document.getElementById('saveBodyCompBtn').addEventListener('click', ()=>{
+    const fatInput = document.getElementById('fatInput');
+    const muscleInput = document.getElementById('muscleInput');
+    const fat = parseFloat(fatInput.value);
+    const muscle = parseFloat(muscleInput.value);
+    if((fatInput.value === '' || isNaN(fat)) && (muscleInput.value === '' || isNaN(muscle))){
+      fatInput.focus();
+      return;
+    }
+    const deltaParts = [];
+    if(!isNaN(fat) && fat >= 0){
+      const diff = fat - bodyComp.fat;
+      if(Math.abs(diff) > 0.01) deltaParts.push(`ไขมัน ${diff > 0 ? '+' : ''}${diff.toFixed(1)}%`);
+      bodyComp.fat = fat;
+    }
+    if(!isNaN(muscle) && muscle >= 0){
+      const diff = muscle - bodyComp.muscle;
+      if(Math.abs(diff) > 0.01) deltaParts.push(`กล้ามเนื้อ ${diff > 0 ? '+' : ''}${diff.toFixed(1)}%`);
+      bodyComp.muscle = muscle;
+    }
+    renderBodyComp();
+    saveLS('bodyComp', bodyComp);
+    bodyCompHistory.push({fat: bodyComp.fat, muscle: bodyComp.muscle});
+    if(bodyCompHistory.length > 10) bodyCompHistory.shift();
+    saveLS('bodyCompHistory', bodyCompHistory);
+    renderBodyCompSpark();
+    fatInput.value = '';
+    muscleInput.value = '';
+    document.getElementById('bodyCompDelta').textContent = deltaParts.length
+      ? `เปลี่ยนแปลงจากครั้งก่อน: ${deltaParts.join(' · ')}`
+      : 'บันทึกแล้ว — ค่าเท่ากับครั้งก่อน';
+    showToast('บันทึกองค์ประกอบร่างกายแล้ว');
+  });
+
+  // ===== Body measurements (เอว/อก/แขน/ขา) =====
+  const MEASURE_MAX = {waist: 120, chest: 130, arm: 50, leg: 80};
+  let measurements = loadLS('measurements', {waist: 82, chest: 98, arm: 33, leg: null});
+  let measureHistory = loadLS('measureHistory', []);
+
+  function renderMeasureSpark(){
+    const wrap = document.getElementById('measureSparkWrap');
+    const waistData = measureHistory.map(h=>h.waist).filter(v=>v != null);
+    if(waistData.length < 2){
+      wrap.innerHTML = '<p class="spark-empty">บันทึกอย่างน้อย 2 ครั้งเพื่อดูกราฟแนวโน้มรอบเอว</p>';
+      return;
+    }
+    wrap.innerHTML = `
+      <div class="spark-legend"><span><span class="spark-dot" style="background:#FF4B33;"></span>แนวโน้มรอบเอว (ซม.)</span></div>
+    ` + buildSparkline([{data:waistData, color:'#FF4B33'}]);
+  }
+
+  function renderMeasurements(){
+    ['waist','chest','arm','leg'].forEach(key=>{
+      const valEl = document.getElementById(key+'Val');
+      const barEl = document.getElementById(key+'Bar');
+      const v = measurements[key];
+      if(v == null){
+        valEl.textContent = '—';
+        barEl.style.width = '0%';
+      }else{
+        valEl.textContent = v.toFixed(1).replace(/\.0$/, '') + ' ซม.';
+        barEl.style.width = Math.min(100, (v / MEASURE_MAX[key]) * 100) + '%';
+      }
+    });
+  }
+  renderMeasurements();
+  renderMeasureSpark();
+
+  document.getElementById('saveMeasureBtn').addEventListener('click', ()=>{
+    const fields = {
+      waist: document.getElementById('waistInput'),
+      chest: document.getElementById('chestInput'),
+      arm: document.getElementById('armInput'),
+      leg: document.getElementById('legInput'),
+    };
+    const deltaParts = [];
+    const labels = {waist:'เอว', chest:'อก', arm:'แขน', leg:'ขา'};
+    let anyValid = false;
+    Object.keys(fields).forEach(key=>{
+      const raw = fields[key].value;
+      const v = parseFloat(raw);
+      if(raw !== '' && !isNaN(v) && v > 0){
+        anyValid = true;
+        const prev = measurements[key];
+        if(prev != null && Math.abs(v - prev) > 0.01){
+          const diff = v - prev;
+          deltaParts.push(`${labels[key]} ${diff > 0 ? '+' : ''}${diff.toFixed(1)} ซม.`);
+        }
+        measurements[key] = v;
+      }
+    });
+    if(!anyValid){
+      fields.waist.focus();
+      return;
+    }
+    renderMeasurements();
+    saveLS('measurements', measurements);
+    measureHistory.push({waist: measurements.waist, chest: measurements.chest, arm: measurements.arm, leg: measurements.leg});
+    if(measureHistory.length > 10) measureHistory.shift();
+    saveLS('measureHistory', measureHistory);
+    renderMeasureSpark();
+    Object.values(fields).forEach(f=> f.value = '');
+    document.getElementById('measureDelta').textContent = deltaParts.length
+      ? `เปลี่ยนแปลงจากครั้งก่อน: ${deltaParts.join(' · ')}`
+      : 'บันทึกแล้ว';
+    showToast('บันทึกสัดส่วนร่างกายแล้ว');
+  });
+  const ageEl = document.getElementById('age');
+  const weightEl = document.getElementById('weight');
+  const heightEl = document.getElementById('height');
+  const activityEl = document.getElementById('activity');
+  const genderEls = document.querySelectorAll('input[name="gender"]');
+
+  const TARGET_LABELS = {cut:'เป้าหมาย: ลดน้ำหนัก', maintain:'เป้าหมาย: คงที่', bulk:'เป้าหมาย: เพิ่มกล้ามเนื้อ'};
+  let selectedTarget = 'cut';
+  let userPickedTarget = false;
+  let lastCategory = 'normal';
+
+  // restore saved calculator inputs (this browser only)
+  const savedCalc = loadLS('calc', null);
+  if(savedCalc){
+    if(savedCalc.age != null) ageEl.value = savedCalc.age;
+    if(savedCalc.weight != null) weightEl.value = savedCalc.weight;
+    if(savedCalc.height != null) heightEl.value = savedCalc.height;
+    if(savedCalc.activity != null) activityEl.value = savedCalc.activity;
+    if(savedCalc.gender){
+      genderEls.forEach(el=>{ el.checked = (el.value === savedCalc.gender); });
+    }
+    if(savedCalc.selectedTarget){
+      selectedTarget = savedCalc.selectedTarget;
+      userPickedTarget = !!savedCalc.userPickedTarget;
+    }
+  }
+
+  const BMI_INFO = {
+    under: {
+      label:'น้ำหนักต่ำกว่าเกณฑ์', color:'#3B82F6', target:'bulk', goal:'gain', days:5,
+      reco:'BMI ของคุณอยู่ในเกณฑ์ <strong>ผอมกว่ามาตรฐาน</strong> การเพิ่มน้ำหนักอย่างมีคุณภาพด้วยการสร้างกล้ามเนื้อจะช่วยให้ร่างกายแข็งแรงและภูมิคุ้มกันดีขึ้น แนะนำโปรแกรม "เพิ่มกล้ามเนื้อ" 4-5 วัน/สัปดาห์ ควบคู่กับแคลอรีเป้าหมาย "เพิ่มกล้ามเนื้อ" และเน้นโปรตีนให้เพียงพอในแต่ละวัน'
+    },
+    normal: {
+      label:'สมส่วน', color:'#1F9D55', target:'maintain', goal:'tone', days:4,
+      reco:'BMI ของคุณอยู่ใน<strong>เกณฑ์ปกติ</strong> เยี่ยมมาก! เน้นรักษาความฟิตและกระชับสัดส่วนด้วยโปรแกรม "กระชับสัดส่วน" 3-4 วัน/สัปดาห์ และคุมแคลอรีให้อยู่ในระดับ "คงที่" เพื่อรักษามวลกล้ามเนื้อและสุขภาพโดยรวม'
+    },
+    over: {
+      label:'น้ำหนักเกิน', color:'#E0A800', target:'cut', goal:'lose', days:4,
+      reco:'BMI ของคุณอยู่ในเกณฑ์<strong>น้ำหนักเกิน</strong> แนะนำเริ่มโปรแกรม "ลดน้ำหนัก" 4 วัน/สัปดาห์ ควบคู่กับคุมแคลอรีตามเป้าหมาย "ลดน้ำหนัก" ด้านบน เพื่อลดไขมันอย่างค่อยเป็นค่อยไปโดยไม่เสียมวลกล้ามเนื้อ'
+    },
+    obese1: {
+      label:'อ้วนระดับ 1', color:'#FF8A33', target:'cut', goal:'lose', days:3,
+      reco:'BMI ของคุณอยู่ในเกณฑ์<strong>อ้วนระดับ 1</strong> แนะนำเริ่มจากโปรแกรม "ลดน้ำหนัก" 3 วัน/สัปดาห์ ผสมคาร์ดิโอเบาๆ และคุมแคลอรีตามเป้าหมาย "ลดน้ำหนัก" หากมีโรคประจำตัวควรปรึกษาแพทย์ก่อนเริ่มโปรแกรมที่หนักขึ้น'
+    },
+    obese2: {
+      label:'อ้วนระดับ 2 ขึ้นไป', color:'#FF4B33', target:'cut', goal:'lose', days:3,
+      reco:'BMI ของคุณอยู่ในเกณฑ์<strong>อ้วนระดับ 2 ขึ้นไป</strong> แนะนำเริ่มจากกิจกรรมเบาๆ เช่น เดินเร็ว 20-30 นาที/วัน ร่วมกับคุมแคลอรีตามเป้าหมาย "ลดน้ำหนัก" และควรปรึกษาแพทย์หรือเทรนเนอร์ก่อนเริ่มโปรแกรมออกกำลังกายที่หนักขึ้น'
+    },
+  };
+
+  function getBmiCategory(bmi){
+    if(bmi < 18.5) return 'under';
+    if(bmi < 23) return 'normal';
+    if(bmi < 25) return 'over';
+    if(bmi < 30) return 'obese1';
+    return 'obese2';
+  }
+
+  function updateTargetHighlight(){
+    document.querySelectorAll('.goal-cell').forEach(c=>{
+      c.classList.toggle('highlight', c.dataset.target === selectedTarget);
+    });
+    document.getElementById('targetName').textContent = TARGET_LABELS[selectedTarget];
+  }
+
+  function updateMacros(tdee, weight){
+    const targetCal = selectedTarget==='cut' ? (tdee-500) : selectedTarget==='bulk' ? (tdee+300) : tdee;
+    const proteinG = weight * 2;
+    const proteinCal = proteinG * 4;
+    const fatCal = Math.max(targetCal, 0) * 0.25;
+    const fatG = fatCal / 9;
+    const carbCal = Math.max(targetCal - proteinCal - fatCal, 0);
+    const carbG = carbCal / 4;
+    document.getElementById('proteinG').textContent = Math.round(proteinG);
+    document.getElementById('fatG').textContent = Math.round(fatG);
+    document.getElementById('carbG').textContent = Math.round(carbG);
+  }
+
+  function calc(){
+    const age = parseFloat(ageEl.value) || 0;
+    const weight = parseFloat(weightEl.value) || 0;
+    const height = parseFloat(heightEl.value) || 0;
+    const activity = parseFloat(activityEl.value);
+    let gender = 'male';
+    genderEls.forEach(el=>{ if(el.checked) gender = el.value; });
+
+    let bmr = 10*weight + 6.25*height - 5*age;
+    bmr += (gender === 'male') ? 5 : -161;
+    bmr = Math.max(bmr, 0);
+    const tdee = bmr * activity;
+
+    document.getElementById('bmrVal').textContent = Math.round(bmr).toLocaleString();
+    document.getElementById('tdeeVal').textContent = Math.round(tdee).toLocaleString();
+    document.getElementById('cutVal').textContent = Math.round(tdee - 500).toLocaleString();
+    document.getElementById('maintainVal').textContent = Math.round(tdee).toLocaleString();
+    document.getElementById('bulkVal').textContent = Math.round(tdee + 300).toLocaleString();
+
+    // BMI + category
+    const heightM = height / 100;
+    const bmi = heightM > 0 ? weight / (heightM*heightM) : 0;
+    const catKey = getBmiCategory(bmi);
+    const cat = BMI_INFO[catKey];
+    lastCategory = catKey;
+
+    document.getElementById('bmiVal2').textContent = bmi.toFixed(1);
+    document.getElementById('bmiChip').textContent = bmi.toFixed(1);
+    const badge = document.getElementById('bmiBadge');
+    badge.textContent = cat.label;
+    badge.style.background = cat.color;
+
+    // ideal weight range (BMI 18.5 - 22.9)
+    const idealMin = (18.5 * heightM*heightM).toFixed(1);
+    const idealMax = (22.9 * heightM*heightM).toFixed(1);
+    document.getElementById('idealWeight').innerHTML = `<strong>${idealMin} - ${idealMax}</strong> กก.`;
+
+    // marker on BMI scale (display range 15 - 35)
+    const pct = Math.min(100, Math.max(0, (bmi - 15) / 20 * 100));
+    document.getElementById('bmiMarker').style.left = pct + '%';
+
+    // recommendation text
+    document.getElementById('recoText').innerHTML = cat.reco;
+
+    // macro target — auto-pick based on BMI unless the user clicked a goal cell
+    if(!userPickedTarget) selectedTarget = cat.target;
+    updateTargetHighlight();
+    updateMacros(tdee, weight);
+
+    // sync the meal tracker's calorie target with the selected goal
+    const mealTargetCal = selectedTarget==='cut' ? (tdee-500) : selectedTarget==='bulk' ? (tdee+300) : tdee;
+    currentTargetCalories = Math.max(Math.round(mealTargetCal), 0);
+    document.getElementById('mealTarget').textContent = currentTargetCalories.toLocaleString();
+    document.getElementById('mealTargetLabel').textContent = '(' + TARGET_SHORT[selectedTarget] + ')';
+    if(typeof renderMeals === 'function') renderMeals();
+
+    // water intake
+    document.getElementById('waterNote').innerHTML =
+      `แนะนำดื่มน้ำประมาณ <strong>${(weight*0.033).toFixed(1)} ลิตร/วัน</strong> (≈ ${Math.round(weight*33).toLocaleString()} มล.) เพื่อช่วยระบบเผาผลาญและการฟื้นฟูร่างกาย`;
+
+    // persist calculator state to this browser
+    saveLS('calc', {age, weight, height, activity, gender, selectedTarget, userPickedTarget});
+  }
+  [ageEl, weightEl, heightEl, activityEl].forEach(el=>el.addEventListener('input', calc));
+  genderEls.forEach(el=>el.addEventListener('change', calc));
+
+  // allow clicking / keyboard-selecting a calorie goal to drive the macro breakdown
+  document.querySelectorAll('.goal-cell').forEach(cell=>{
+    cell.addEventListener('click', ()=>{
+      selectedTarget = cell.dataset.target;
+      userPickedTarget = true;
+      calc();
+    });
+    cell.addEventListener('keydown', e=>{
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); cell.click(); }
+    });
+  });
+
+  // "ดูโปรแกรมที่เหมาะกับคุณ" → jump to the matching workout program
+  document.getElementById('viewProgramBtn').addEventListener('click', ()=>{
+    const info = BMI_INFO[lastCategory] || BMI_INFO.normal;
+    currentGoal = info.goal;
+    currentDays = info.days;
+    document.querySelectorAll('#goalPills .pill').forEach(p=>p.classList.toggle('active', p.dataset.goal===currentGoal));
+    document.querySelectorAll('#dayPills .pill').forEach(p=>p.classList.toggle('active', parseInt(p.dataset.days)===currentDays));
+    renderPlan();
+    document.getElementById('programs').scrollIntoView({behavior:'smooth'});
+  });
+
+  // ===== Meal / Calorie tracker =====
+  const TARGET_SHORT = {cut:'ลดน้ำหนัก', maintain:'คงที่', bulk:'เพิ่มกล้ามเนื้อ'};
+  let currentTargetCalories = 2104;
+  let meals = loadLS('meals', []);
+
+  const MEAL_QUICK = [
+    {name:'ข้าวผัดไก่', kcal:550},
+    {name:'ส้มตำ', kcal:120},
+    {name:'ข้าวมันไก่', kcal:600},
+    {name:'ต้มยำกุ้ง', kcal:180},
+    {name:'อกไก่ย่าง 100 ก.', kcal:165},
+    {name:'ไข่ดาว', kcal:90},
+    {name:'ข้าวกล้อง 1 ถ้วย', kcal:200},
+    {name:'กล้วย 1 ผล', kcal:105},
+    {name:'นมจืด 1 แก้ว', kcal:120},
+  ];
+
+  function escapeHtml(str){
+    return str.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function renderMeals(){
+    const listEl = document.getElementById('mealList');
+    if(meals.length === 0){
+      listEl.innerHTML = '<li class="meal-empty">ยังไม่มีรายการอาหารวันนี้</li>';
+    } else {
+      listEl.innerHTML = meals.map((m,i)=>`
+        <li class="meal-item">
+          <span class="m-type">${m.time}</span>
+          <span class="m-name">${escapeHtml(m.name)}</span>
+          <span class="m-kcal">${m.kcal.toLocaleString()} kcal</span>
+          <button class="m-del" data-i="${i}" type="button" aria-label="ลบ ${escapeHtml(m.name)}">✕</button>
+        </li>
+      `).join('');
+    }
+
+    const consumed = meals.reduce((s,m)=>s+m.kcal, 0);
+    const target = currentTargetCalories;
+    const remaining = target - consumed;
+
+    document.getElementById('mealConsumed').textContent = consumed.toLocaleString();
+    document.getElementById('mealRemaining').textContent = remaining.toLocaleString();
+
+    const pct = target > 0 ? Math.min(100, (consumed / target) * 100) : 0;
+    const fill = document.getElementById('mealBarFill');
+    fill.style.width = pct + '%';
+    fill.style.background = remaining < 0 ? 'var(--accent)' : (pct > 90 ? 'var(--highlight)' : '#1F9D55');
+
+    const hintEl = document.getElementById('mealHint');
+    if(meals.length === 0){
+      hintEl.textContent = 'ยังไม่มีรายการอาหารวันนี้ — ลองเพิ่มมื้อแรกของคุณดูสิ';
+    } else if(remaining < 0){
+      hintEl.textContent = `วันนี้ทานเกินเป้าหมายไปแล้ว ${Math.abs(remaining).toLocaleString()} kcal ลองปรับมื้อต่อไปให้เบาลง หรือเพิ่มการเคลื่อนไหวเพิ่มอีกนิด`;
+    } else if(remaining < target * 0.15){
+      hintEl.textContent = `ใกล้ถึงเป้าหมายแล้ว เหลืออีก ${remaining.toLocaleString()} kcal สำหรับวันนี้`;
+    } else {
+      hintEl.textContent = `วันนี้ยังทานได้อีก ${remaining.toLocaleString()} kcal ลองวางแผนมื้อต่อไปให้ครบหมู่`;
+    }
+  }
+
+  function addMeal(name, kcal, time){
+    meals.push({name, kcal, time});
+    renderMeals();
+    saveLS('meals', meals);
+  }
+
+  // quick-add chips
+  const quickChipsEl = document.getElementById('quickChips');
+  quickChipsEl.innerHTML = MEAL_QUICK.map((m,i)=>`<button class="chip" type="button" data-i="${i}">${m.name} · ${m.kcal} kcal</button>`).join('');
+  quickChipsEl.addEventListener('click', e=>{
+    const btn = e.target.closest('.chip');
+    if(!btn) return;
+    const m = MEAL_QUICK[parseInt(btn.dataset.i)];
+    const hour = new Date().getHours();
+    let time = 'ของว่าง';
+    if(hour < 11) time = 'เช้า';
+    else if(hour < 16) time = 'กลางวัน';
+    else if(hour < 20) time = 'เย็น';
+    addMeal(m.name, m.kcal, time);
+  });
+
+  // custom meal form
+  const mealNameEl = document.getElementById('mealName');
+  const mealKcalEl = document.getElementById('mealKcal');
+  const mealTimeEl = document.getElementById('mealTime');
+  document.getElementById('addMealBtn').addEventListener('click', ()=>{
+    const name = mealNameEl.value.trim();
+    const kcal = parseInt(mealKcalEl.value, 10);
+    if(!name){ mealNameEl.focus(); return; }
+    if(!kcal || kcal <= 0){ mealKcalEl.focus(); return; }
+    addMeal(name, kcal, mealTimeEl.value);
+    mealNameEl.value = '';
+    mealKcalEl.value = '';
+    mealNameEl.focus();
+  });
+  [mealNameEl, mealKcalEl].forEach(el=>{
+    el.addEventListener('keydown', e=>{
+      if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('addMealBtn').click(); }
+    });
+  });
+
+  // delete a meal
+  document.getElementById('mealList').addEventListener('click', e=>{
+    const btn = e.target.closest('.m-del');
+    if(!btn) return;
+    meals.splice(parseInt(btn.dataset.i, 10), 1);
+    renderMeals();
+    saveLS('meals', meals);
+  });
+
+  renderMeals();
+
+  // ===== Exercise library — animated demo modal =====
+  const EXERCISE_DATA = {
+    squat: {
+      tag:'ขา / สะโพก', name:'Barbell Squat', anim:'anim-squat', sets:'แนะนำ: 4 เซต x 8-10 ครั้ง',
+      desc:'ท่าพื้นฐานที่ฝึกกล้ามเนื้อขาและสะโพกทั้งหมดในท่าเดียว เหมาะเป็นท่าหลักของวันเล่นขา',
+      steps:[
+        'ยืนแยกเท้าเท่าความกว้างไหล่ วางบาร์บนบ่าส่วนบน (ไม่ใช่คอ)',
+        'หายใจเข้าลึกๆ เกร็งแกนกลางลำตัว แล้วงอเข่า-สะโพกลงพร้อมกัน',
+        'ลงจนกระทั่งสะโพกต่ำกว่าหรือเสมอแนวเข่า โดยหลังตรงตลอดช่วงการเคลื่อนไหว',
+        'ดันพื้นด้วยส้นเท้าเพื่อยืนขึ้นกลับสู่ตำแหน่งเริ่มต้น',
+      ],
+      mistakes:[
+        'เข่าโถมเข้าด้านใน ควรดันเข่าออกแนวเดียวกับปลายเท้า',
+        'หลังงอหรือก้มมากเกินไปขณะลงน้ำหนัก',
+        'ยกส้นเท้าลอยขณะลง ทำให้เสียศูนย์การทรงตัว',
+      ],
+    },
+    bench: {
+      tag:'อก / ไหล่', name:'Bench Press', anim:'anim-bench', sets:'แนะนำ: 4 เซต x 8-10 ครั้ง',
+      desc:'ท่าหลักสำหรับฝึกกล้ามเนื้อหน้าอก ไหล่ และไตรเซป ด้วยการดันบาร์ในแนวนอน',
+      steps:[
+        'นอนบนเบาะ ให้ตาอยู่ใต้บาร์เล็กน้อย ขาทั้งสองวางพื้นมั่นคง',
+        'จับบาร์กว้างกว่าหัวไหล่เล็กน้อย ปลดบาร์แล้วควบคุมลงมาที่หน้าอก',
+        'แตะหน้าอกเบาๆ โดยข้อศอกทำมุมประมาณ 45 องศากับลำตัว',
+        'ดันบาร์ขึ้นจนแขนเหยียดตรง โดยไม่ยกสะโพกลอยจากเบาะ',
+      ],
+      mistakes:[
+        'ปล่อยข้อศอกกางออก 90 องศา เสี่ยงบาดเจ็บไหล่',
+        'เด้งบาร์ออกจากหน้าอกแทนการควบคุมจังหวะ',
+        'ยกสะโพกลอยขึ้นเพื่อช่วยดันบาร์',
+      ],
+    },
+    latpull: {
+      tag:'หลัง', name:'Lat Pulldown', anim:'anim-latpull', sets:'แนะนำ: 3 เซต x 10-12 ครั้ง',
+      desc:'ฝึกกล้ามเนื้อหลังกว้างและสะบัก เหมาะสำหรับผู้ที่ยังดึงข้อตัวเองไม่ได้',
+      steps:[
+        'นั่งจับแกนดึงให้กว้างกว่าหัวไหล่เล็กน้อย ล็อกเข่าใต้เบาะรองขา',
+        'เอนลำตัวไปด้านหลังเล็กน้อย เกร็งแกนกลางลำตัว',
+        'ดึงแกนลงมาหาหน้าอกบน โดยใช้สะบักหุบเข้าเป็นตัวนำการดึง',
+        'ค่อยๆ ปล่อยขึ้นแบบควบคุมจนแขนเหยียดตรง',
+      ],
+      mistakes:[
+        'ดึงด้วยแรงแขนอย่างเดียวโดยไม่ใช้สะบัก',
+        'โยกตัวไปมามากเกินไปจนกลายเป็นแรงเหวี่ยง',
+        'ปล่อยน้ำหนักขึ้นเร็วเกินไปแบบไม่ควบคุม',
+      ],
+    },
+    rdl: {
+      tag:'ขาหลัง / สะโพก', name:'Romanian Deadlift', anim:'anim-rdl', sets:'แนะนำ: 3 เซต x 8-10 ครั้ง',
+      desc:'ฝึกกล้ามเนื้อต้นขาหลังและสะโพกผ่านการเหยียดสะโพก (hip hinge) เหมาะคู่กับท่าสควอท',
+      steps:[
+        'ยืนแยกเท้าเท่าสะโพก ถือบาร์หรือดัมเบลแนบหน้าขา',
+        'งอเข่าเล็กน้อยและคงไว้ตลอดการเคลื่อนไหว',
+        'ดันสะโพกไปด้านหลัง ก้มลำตัวลงโดยหลังตรง จนรู้สึกตึงที่ต้นขาหลัง',
+        'ดันสะโพกไปข้างหน้ากลับสู่ท่ายืนตรง โดยเกร็งสะโพกที่จุดสูงสุด',
+      ],
+      mistakes:[
+        'หลังโค้งงอขณะก้มตัวลง',
+        'งอเข่ามากเกินไปจนกลายเป็นท่าสควอท',
+        'บาร์ห่างจากลำตัวมากเกินไป ทำให้เสียศูนย์',
+      ],
+    },
+    plank: {
+      tag:'แกนกลางลำตัว', name:'Plank', anim:'anim-plank', sets:'แนะนำ: 3 เซต x 30-60 วินาที',
+      desc:'ท่าค้างที่ฝึกความแข็งแรงของแกนกลางลำตัวและช่วยปรับสมดุลของหลัง',
+      steps:[
+        'วางข้อศอกบนพื้นใต้แนวหัวไหล่ ปลายเท้าจิกพื้น',
+        'เกร็งหน้าท้องและสะโพก ให้ลำตัวเป็นเส้นตรงจากหัวถึงส้นเท้า',
+        'หายใจเข้า-ออกตามปกติ ค้างท่าตามเวลาที่กำหนด',
+        'หากรู้สึกหลังแอ่นหรือสะโพกตก ให้พักและกลับมาตั้งท่าใหม่',
+      ],
+      mistakes:[
+        'สะโพกตกต่ำจนหลังแอ่น',
+        'ยกสะโพกสูงเกินจนกลายเป็นท่าภูเขา',
+        'กลั้นหายใจตลอดการค้างท่า',
+      ],
+    },
+    shoulder: {
+      tag:'แขน / ไหล่', name:'Dumbbell Shoulder Press', anim:'anim-shoulder', sets:'แนะนำ: 3 เซต x 10-12 ครั้ง',
+      desc:'ฝึกกล้ามเนื้อไหล่และไตรเซปด้วยการดันดัมเบลขึ้นเหนือศีรษะ',
+      steps:[
+        'นั่งหรือยืน ถือดัมเบลไว้ระดับไหล่ ฝ่ามือหันไปด้านหน้า',
+        'เกร็งแกนกลางลำตัว ดันดัมเบลขึ้นเหนือศีรษะจนแขนเหยียดตรง',
+        'ควบคุมจังหวะลดดัมเบลกลับลงมาที่ระดับไหล่',
+        'หลีกเลี่ยงการแอ่นหลังมากเกินไปขณะดันขึ้น',
+      ],
+      mistakes:[
+        'แอ่นหลังมากเพื่อช่วยดันน้ำหนักขึ้น',
+        'ใช้แรงเหวี่ยงจากขาหรือสะโพก',
+        'ปล่อยข้อมือหักงอขณะรับน้ำหนัก',
+      ],
+    },
+  };
+
+  const exerciseModal = document.getElementById('exerciseModal');
+  const modalThumb = document.getElementById('modalThumb');
+
+  function openExerciseModal(id){
+    const data = EXERCISE_DATA[id];
+    if(!data) return;
+    document.getElementById('modalTag').textContent = data.tag;
+    document.getElementById('modalTitle').textContent = data.name;
+    document.getElementById('modalDesc').textContent = data.desc;
+    document.getElementById('modalSets').textContent = data.sets;
+    document.getElementById('modalSteps').innerHTML = data.steps.map(s=>`<li>${s}</li>`).join('');
+    document.getElementById('modalMistakes').innerHTML = data.mistakes.map(s=>`<li>${s}</li>`).join('');
+    modalThumb.className = 'modal-thumb ' + data.anim;
+    exerciseModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('modalClose').focus();
+  }
+  function closeExerciseModal(){
+    exerciseModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('.lib-card').forEach(card=>{
+    card.addEventListener('click', ()=> openExerciseModal(card.dataset.ex));
+    card.addEventListener('keydown', e=>{
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openExerciseModal(card.dataset.ex); }
+    });
+  });
+  document.getElementById('modalClose').addEventListener('click', closeExerciseModal);
+  exerciseModal.addEventListener('click', e=>{
+    if(e.target === exerciseModal) closeExerciseModal();
+  });
+
+  // ===== Free signup buttons =====
+  function handleFreeSignup(){
+    showToast('เริ่มใช้งานฟรีแล้ว — ข้อมูลของคุณจะถูกบันทึกในเบราว์เซอร์นี้โดยอัตโนมัติ');
+    document.getElementById('tracking').scrollIntoView({behavior:'smooth'});
+  }
+  document.getElementById('navFreeBtn').addEventListener('click', handleFreeSignup);
+  document.getElementById('freeSignupBtn').addEventListener('click', handleFreeSignup);
+
+  // ===== PAYMENT CONFIG — ใส่ค่าของคุณที่นี่ =====
+  const PAYMENT_CONFIG = {
+    omisePublicKey:   '',   // เช่น 'pkey_test_xxxxxxxx' จาก Omise Dashboard → Keys
+    edgeFunctionUrl:  'https://zuogjkzvoawuefbehffe.supabase.co/functions/v1/fitlog-payment',   // เช่น 'https://xxx.supabase.co/functions/v1/fitlog-payment'
+  };
+
+  // ===== Premium checkout (Omise + Stripe จริง) =====
+  const checkoutModal     = document.getElementById('checkoutModal');
+  const checkoutStep      = document.getElementById('checkoutStep');
+  const checkoutSuccess   = document.getElementById('checkoutSuccess');
+  const checkoutPending   = document.getElementById('checkoutPending');
+  const processingOverlay = document.getElementById('processingOverlay');
+
+  let selectedPlan    = 'monthly';
+  let selectedMethod  = 'promptpay';
+  let pendingChargeId = null;
+
+  // plan toggle monthly/yearly
+  document.getElementById('toggleMonthly').addEventListener('click', ()=>{
+    selectedPlan = 'monthly';
+    document.getElementById('toggleMonthly').classList.add('active');
+    document.getElementById('toggleYearly').classList.remove('active');
+    document.getElementById('premiumPriceDisplay').innerHTML = '฿129 <span>/ เดือน</span>';
+    document.getElementById('premiumYearlyNote').style.display = 'none';
+    document.getElementById('checkoutPlanName').textContent  = 'Premium รายเดือน';
+    document.getElementById('checkoutPlanPrice').textContent = '฿129';
+  });
+  document.getElementById('toggleYearly').addEventListener('click', ()=>{
+    selectedPlan = 'yearly';
+    document.getElementById('toggleMonthly').classList.remove('active');
+    document.getElementById('toggleYearly').classList.add('active');
+    document.getElementById('premiumPriceDisplay').innerHTML = '฿990 <span>/ ปี</span>';
+    document.getElementById('premiumYearlyNote').style.display = 'block';
+    document.getElementById('checkoutPlanName').textContent  = 'Premium รายปี';
+    document.getElementById('checkoutPlanPrice').textContent = '฿990';
+  });
+
+  // payment method tabs
+  document.querySelectorAll('.pay-tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.pay-tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      selectedMethod = tab.dataset.method;
+      ['promptpay','credit_card','truemoney','stripe'].forEach(m=>{
+        const el = document.getElementById('payForm_'+m);
+        if(el) el.style.display = m === selectedMethod ? '' : 'none';
+      });
+    });
+  });
+
+  function openCheckout(){
+    checkoutStep.style.display    = '';
+    checkoutSuccess.style.display = 'none';
+    checkoutPending.style.display = 'none';
+    processingOverlay.classList.remove('show');
+    checkoutModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeCheckout(){
+    checkoutModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  async function doCharge(){
+    if(!PAYMENT_CONFIG.edgeFunctionUrl){
+      showToast('⚙️ ยังไม่ได้ตั้งค่า edgeFunctionUrl — ดูคอมเมนต์ PAYMENT_CONFIG ในโค้ด');
+      return;
+    }
+    if(!currentUser){
+      closeCheckout();
+      showToast('กรุณาเข้าสู่ระบบก่อนชำระเงิน');
+      openAuth();
+      return;
+    }
+    processingOverlay.classList.add('show');
+    try {
+      let token  = null;
+      let gateway = selectedMethod === 'stripe' ? 'stripe' : 'omise';
+
+      if(selectedMethod === 'credit_card'){
+        if(!PAYpkey_test_680i2799vashdqf516nMENT_CONFIG.omisePublicKey) throw new Error('ยังไม่ได้ตั้งค่า Omise Public Key');
+        // ในการใช้งานจริง: token = await OmiseCard.createToken(...)
+        token = 'tokn_test_placeholder';
+      } else if(selectedMethod === 'promptpay'){
+        token = { type: 'promptpay' };
+      } else if(selectedMethod === 'truemoney'){
+        const phone = document.getElementById('trueMoneyPhone').value.trim();
+        if(!phone || phone.length < 10) throw new Error('กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง');
+        token = { type: 'truemoney', phone_number: phone };
+      } else if(selectedMethod === 'stripe'){
+        token = 'pm_test_placeholder';
+      }
+
+      const { data:{ session } } = await supabaseClient.auth.getSession();
+      const res = await fetch(PAYMENT_CONFIG.edgeFunctionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + session.access_token,
+        },
+        body: JSON.stringify({ action:'charge', gateway, token, plan:selectedPlan }),
+      });
+      const result = await res.json();
+      if(result.error) throw new Error(result.error);
+      processingOverlay.classList.remove('show');
+
+      if(result.authorize_uri){
+        // PromptPay QR จาก Omise
+        document.getElementById('qrImage').innerHTML =
+          `<img src="${result.authorize_uri}" style="width:100%;height:100%;object-fit:contain;border-radius:8px;" alt="QR Code">`;
+        document.getElementById('promptpayQR').style.display = 'block';
+        checkoutStep.style.display    = 'none';
+        checkoutPending.style.display = '';
+        pendingChargeId = result.charge_id;
+      } else if(result.success){
+        checkoutStep.style.display    = 'none';
+        checkoutSuccess.style.display = '';
+        saveLS('premium', true);
+        updatePremiumUI(true);
+        showToast('ชำระเงินสำเร็จ! ยินดีต้อนรับสู่ Premium 🎉');
+      } else {
+        throw new Error('การชำระเงินไม่สำเร็จ กรุณาลองใหม่');
+      }
+    } catch(err){
+      processingOverlay.classList.remove('show');
+      showToast('เกิดข้อผิดพลาด: ' + err.message);
+    }
+  }
+
+  async function checkPendingPayment(){
+    if(!supabaseClient || !currentUser || !PAYMENT_CONFIG.edgeFunctionUrl) return;
+    try {
+      const { data:{ session } } = await supabaseClient.auth.getSession();
+      const res = await fetch(PAYMENT_CONFIG.edgeFunctionUrl, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json','Authorization':'Bearer '+session.access_token },
+        body: JSON.stringify({ action:'get_subscription' }),
+      });
+      const sub = await res.json();
+      if(sub.status === 'active'){
+        checkoutPending.style.display = 'none';
+        checkoutSuccess.style.display = '';
+        saveLS('premium', true);
+        updatePremiumUI(true);
+        showToast('ชำระเงินสำเร็จ! ยินดีต้อนรับสู่ Premium 🎉');
+      } else {
+        showToast('ยังไม่ได้รับการยืนยัน — ลองตรวจสอบอีกครั้งหลังสแกน QR เสร็จ');
+      }
+    } catch(e){ showToast('ไม่สามารถตรวจสอบสถานะได้'); }
+  }
+
+  function updatePremiumUI(isPremium){
+    const badge      = document.getElementById('premiumStatusBadge');
+    const upgradeBtn = document.getElementById('premiumUpgradeBtn');
+    if(badge) badge.style.display      = isPremium ? 'block' : 'none';
+    if(upgradeBtn) upgradeBtn.textContent = isPremium ? 'จัดการ Subscription' : 'อัปเกรดเป็น Premium';
+  }
+
+  async function loadSubscriptionStatus(){
+    if(!supabaseClient || !currentUser || !PAYMENT_CONFIG.edgeFunctionUrl) return;
+    try {
+      const { data:{ session } } = await supabaseClient.auth.getSession();
+      if(!session) return;
+      const res = await fetch(PAYMENT_CONFIG.edgeFunctionUrl, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json','Authorization':'Bearer '+session.access_token },
+        body: JSON.stringify({ action:'get_subscription' }),
+      });
+      const sub = await res.json();
+      const isPremium = sub.status === 'active' &&
+        (sub.plan === 'premium_monthly' || sub.plan === 'premium_yearly');
+      updatePremiumUI(isPremium);
+      if(isPremium) saveLS('premium', true);
+    } catch(e){}
+  }
+
+  // check saved premium flag on load (from localStorage)
+  if(loadLS('premium', false)) updatePremiumUI(true);
+
+  document.getElementById('premiumUpgradeBtn').addEventListener('click', openCheckout);
+  document.getElementById('checkoutClose').addEventListener('click', closeCheckout);
+  checkoutModal.addEventListener('click', e=>{ if(e.target===checkoutModal) closeCheckout(); });
+  document.getElementById('confirmPayBtn').addEventListener('click', doCharge);
+  document.getElementById('checkPendingBtn').addEventListener('click', checkPendingPayment);
+  document.getElementById('checkoutDoneBtn').addEventListener('click', closeCheckout);
+
+  // ===== Goal setting =====
+  let goalData = loadLS('goal', {weight: null, date: null});
+  const goalWeightInput = document.getElementById('goalWeightInput');
+  const goalDateInput = document.getElementById('goalDateInput');
+  if(goalData.weight != null) goalWeightInput.value = goalData.weight;
+  if(goalData.date) goalDateInput.value = goalData.date;
+
+  function renderGoal(){
+    const resultEl = document.getElementById('goalResult');
+    if(goalData.weight == null){
+      resultEl.innerHTML = '<p class="meal-empty">ยังไม่ได้ตั้งเป้าหมาย — กรอกน้ำหนักเป้าหมายด้านซ้ายเพื่อเริ่มติดตาม</p>';
+      return;
+    }
+    if(weightData.length === 0){
+      resultEl.innerHTML = '<p class="meal-empty">ยังไม่มีบันทึกน้ำหนัก — บันทึกน้ำหนักแรกของคุณในส่วน "บันทึกร่างกาย" ด้านบนก่อน</p>';
+      return;
+    }
+    const current = weightData[weightData.length - 1];
+    const start = weightData[0];
+    const target = goalData.weight;
+    const diff = current - target; // > 0 ต้องลด, < 0 ต้องเพิ่ม
+
+    let progress = 0;
+    if(Math.abs(diff) < 0.05){
+      progress = 100;
+    }else if(weightData.length >= 2 && (start - target) !== 0){
+      progress = ((start - current) / (start - target)) * 100;
+    }
+    progress = Math.max(0, Math.min(100, progress));
+
+    let etaHtml;
+    if(Math.abs(diff) < 0.05){
+      etaHtml = `<div class="goal-eta">ถึงเป้าหมายแล้ว! น้ำหนักล่าสุด (${current.toFixed(1)} กก.) ใกล้เคียงกับเป้าหมาย (${target.toFixed(1)} กก.) มากแล้ว</div>`;
+    }else if(weightData.length >= 2){
+      const rate = (start - current) / (weightData.length - 1); // กก. ต่อการบันทึก 1 ครั้ง
+      const sameDirection = (diff > 0 && rate > 0) || (diff < 0 && rate < 0);
+      if(sameDirection && Math.abs(rate) > 0.001){
+        const entriesNeeded = Math.ceil(Math.abs(diff) / Math.abs(rate));
+        etaHtml = `<div class="goal-eta">ที่อัตราการเปลี่ยนแปลงเฉลี่ย <strong>${Math.abs(rate).toFixed(2)} กก. ต่อการบันทึก</strong> คาดว่าอีกประมาณ <strong>${entriesNeeded} ครั้งของการบันทึก</strong> จะถึงเป้าหมาย ${target.toFixed(1)} กก. (ถ้าบันทึกสัปดาห์ละครั้ง ≈ ${entriesNeeded} สัปดาห์) — เป็นการประมาณจากแนวโน้มล่าสุดเท่านั้น ไม่ใช่คำยืนยัน</div>`;
+      }else{
+        const wantWord = diff > 0 ? 'ลดลง' : 'เพิ่มขึ้น';
+        etaHtml = `<div class="goal-eta">แนวโน้มน้ำหนักจากบันทึกล่าสุดยังไม่ได้มุ่งไปทาง${wantWord}สู่เป้าหมาย ลองดูที่โปรแกรมออกกำลังกายและแคลอรีเป้าหมายด้านบนว่าตรงกับสิ่งที่อยากให้เกิดขึ้นหรือยัง</div>`;
+      }
+    }else{
+      etaHtml = `<div class="goal-eta">บันทึกน้ำหนักอีกอย่างน้อย 1 ครั้ง เพื่อให้ระบบประมาณระยะเวลาที่จะถึงเป้าหมายได้</div>`;
+    }
+
+    let dateHtml = '';
+    if(goalData.date){
+      const days = Math.ceil((new Date(goalData.date) - new Date()) / (1000*60*60*24));
+      let dateVal;
+      if(days > 0) dateVal = `${days} วัน`;
+      else if(days === 0) dateVal = 'วันนี้';
+      else dateVal = `ผ่านไปแล้ว ${Math.abs(days)} วัน`;
+      dateHtml = `<div class="goal-stat"><div class="lbl-small">เหลือเวลาตามที่ตั้งไว้</div><div class="val">${dateVal}</div></div>`;
+    }
+
+    resultEl.innerHTML = `
+      <div class="goal-stat-row">
+        <div class="goal-stat"><div class="lbl-small">น้ำหนักล่าสุด</div><div class="val">${current.toFixed(1)} กก.</div></div>
+        <div class="goal-stat"><div class="lbl-small">เป้าหมาย</div><div class="val">${target.toFixed(1)} กก.</div></div>
+        <div class="goal-stat"><div class="lbl-small">${diff > 0 ? 'ต้องลดอีก' : diff < 0 ? 'ต้องเพิ่มอีก' : 'ถึงเป้าแล้ว'}</div><div class="val">${Math.abs(diff).toFixed(1)} กก.</div></div>
+        ${dateHtml}
+      </div>
+      <div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${progress.toFixed(0)}%"></div></div>
+      ${etaHtml}
+    `;
+  }
+  renderGoal();
+
+  document.getElementById('saveGoalBtn').addEventListener('click', ()=>{
+    const w = parseFloat(goalWeightInput.value);
+    if(!w || w < 30 || w > 250){ goalWeightInput.focus(); return; }
+    goalData = {weight: w, date: goalDateInput.value || null};
+    saveLS('goal', goalData);
+    renderGoal();
+    showToast('บันทึกเป้าหมายแล้ว');
+  });
+
+  // ===== Login / signup (Supabase auth, falls back to a notice if not configured) =====
+  const authModal = document.getElementById('authModal');
+  const authTabLogin = document.getElementById('authTabLogin');
+  const authTabSignup = document.getElementById('authTabSignup');
+  const authTitle = document.getElementById('authTitle');
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
+  const navLoginBtn = document.getElementById('navLoginBtn');
+  let authMode = 'login';
+
+  function setAuthMode(mode){
+    authMode = mode;
+    authTabLogin.classList.toggle('active', mode === 'login');
+    authTabSignup.classList.toggle('active', mode === 'signup');
+    authTitle.textContent = mode === 'login' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก';
+    authSubmitBtn.textContent = mode === 'login' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก';
+    authSubmitBtn.disabled = false;
+  }
+  authTabLogin.addEventListener('click', ()=> setAuthMode('login'));
+  authTabSignup.addEventListener('click', ()=> setAuthMode('signup'));
+
+  function openAuth(){
+    setAuthMode('login');
+    authModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeAuth(){
+    authModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function updateAuthUI(){
+    if(currentUser){
+      navLoginBtn.textContent = 'ออกจากระบบ (' + currentUser.email.split('@')[0] + ')';
+    }else{
+      navLoginBtn.textContent = 'เข้าสู่ระบบ';
+    }
+  }
+
+  navLoginBtn.addEventListener('click', ()=>{
+    if(currentUser && supabaseClient){
+      supabaseClient.auth.signOut().then(()=>{
+        currentUser = null;
+        updateAuthUI();
+        showToast('ออกจากระบบแล้ว — ข้อมูลในเบราว์เซอร์นี้ยังอยู่ครบ');
+      });
+    }else{
+      openAuth();
+    }
+  });
+  document.getElementById('authClose').addEventListener('click', closeAuth);
+  authModal.addEventListener('click', e=>{
+    if(e.target === authModal) closeAuth();
+  });
+
+  authSubmitBtn.addEventListener('click', async ()=>{
+    const emailEl = document.getElementById('authEmail');
+    const passwordEl = document.getElementById('authPassword');
+    const email = emailEl.value.trim();
+    const password = passwordEl.value;
+    if(!email){ emailEl.focus(); return; }
+    if(!password || password.length < 6){ passwordEl.focus(); return; }
+
+    if(!supabaseClient){
+      showToast('ยังไม่ได้ตั้งค่า Supabase — ใส่ SUPABASE_URL และ SUPABASE_ANON_KEY ในโค้ดก่อน (ดูคอมเมนต์ด้านบนของสคริปต์)');
+      return;
+    }
+
+    authSubmitBtn.disabled = true;
+    authSubmitBtn.textContent = 'กำลังดำเนินการ...';
+
+    const result = authMode === 'login'
+      ? await supabaseClient.auth.signInWithPassword({email, password})
+      : await supabaseClient.auth.signUp({email, password});
+
+    if(result.error){
+      setAuthMode(authMode);
+      showToast('เกิดข้อผิดพลาด: ' + result.error.message);
+      return;
+    }
+
+    if(authMode === 'signup' && !result.data.session){
+      setAuthMode(authMode);
+      closeAuth();
+      showToast('สมัครสำเร็จ! กรุณายืนยันอีเมลที่ระบบส่งไปให้ แล้วเข้าสู่ระบบอีกครั้ง');
+      return;
+    }
+
+    currentUser = result.data.user;
+    setAuthMode(authMode);
+    closeAuth();
+    updateAuthUI();
+    showToast('เข้าสู่ระบบสำเร็จ — กำลังซิงค์ข้อมูล...');
+    await pullCloudData();
+    showToast('ซิงค์ข้อมูลเรียบร้อย — เปิดจากอุปกรณ์อื่นแล้วล็อกอินด้วยบัญชีนี้ จะเห็นข้อมูลเดียวกัน');
+  });
+
+  // pull every saved key from Supabase into this browser, push up any
+  // local-only keys (first sync from a new device), then re-render the UI
+  async function pullCloudData(){
+    if(!supabaseClient || !currentUser) return;
+    const {data, error} = await supabaseClient
+      .from('user_data')
+      .select('data_key, data_value')
+      .eq('user_id', currentUser.id);
+    if(error){ console.error('Pull error:', error.message); return; }
+
+    const cloudKeys = new Set();
+    (data || []).forEach(row=>{
+      cloudKeys.add(row.data_key);
+      try{ localStorage.setItem(LS_PREFIX + row.data_key, JSON.stringify(row.data_value)); }catch(e){}
+    });
+
+    for(const key of SYNC_KEYS){
+      if(!cloudKeys.has(key)){
+        const raw = localStorage.getItem(LS_PREFIX + key);
+        if(raw !== null){
+          try{
+            await supabaseClient.from('user_data').upsert({
+              user_id: currentUser.id, data_key: key, data_value: JSON.parse(raw), updated_at: new Date().toISOString(),
+            });
+          }catch(e){}
+        }
+      }
+    }
+    reloadAllFromStorage();
+  }
+
+  // re-read every piece of state from localStorage and re-render the page
+  // (used after logging in and pulling fresh data from Supabase)
+  function reloadAllFromStorage(){
+    weightData = loadLS('weight', []);
+    renderChart();
+
+    photoData = loadLS('photos', {});
+    document.querySelectorAll('.photo-slot').forEach(slot=>{
+      const key = slot.dataset.slot;
+      slot.classList.remove('has-image');
+      slot.style.backgroundImage = '';
+      if(photoData[key]){
+        slot.style.backgroundImage = `url(${photoData[key]})`;
+        slot.classList.add('has-image');
+      }
+    });
+
+    bodyComp = loadLS('bodyComp', {fat: 21.4, muscle: 42.1});
+    bodyCompHistory = loadLS('bodyCompHistory', []);
+    renderBodyComp();
+    renderBodyCompSpark();
+
+    measurements = loadLS('measurements', {waist: 82, chest: 98, arm: 33, leg: null});
+    measureHistory = loadLS('measureHistory', []);
+    renderMeasurements();
+    renderMeasureSpark();
+
+    meals = loadLS('meals', []);
+    renderMeals();
+
+    const savedCalc = loadLS('calc', null);
+    if(savedCalc){
+      if(savedCalc.age != null) ageEl.value = savedCalc.age;
+      if(savedCalc.weight != null) weightEl.value = savedCalc.weight;
+      if(savedCalc.height != null) heightEl.value = savedCalc.height;
+      if(savedCalc.activity != null) activityEl.value = savedCalc.activity;
+      if(savedCalc.gender) genderEls.forEach(el=>{ el.checked = (el.value === savedCalc.gender); });
+      if(savedCalc.selectedTarget){
+        selectedTarget = savedCalc.selectedTarget;
+        userPickedTarget = !!savedCalc.userPickedTarget;
+      }
+    }
+    calc();
+
+    goalData = loadLS('goal', {weight: null, date: null});
+    goalWeightInput.value = goalData.weight != null ? goalData.weight : '';
+    goalDateInput.value = goalData.date || '';
+    renderGoal();
+  }
+
+  // restore session on page load (e.g. user already logged in on this device)
+  if(supabaseClient){
+    supabaseClient.auth.getSession().then(async ({data})=>{
+      if(data && data.session){
+        currentUser = data.session.user;
+        updateAuthUI();
+        await pullCloudData();
+      }
+    });
+    supabaseClient.auth.onAuthStateChange((event)=>{
+      if(event === 'SIGNED_OUT'){
+        currentUser = null;
+        updateAuthUI();
+      }
+    });
+  }
+
+  document.addEventListener('keydown', e=>{
+    if(e.key === 'Escape'){ closeExerciseModal(); closeCheckout(); closeAuth(); }
+  });
+
+  calc();
+
+  // ===== Workout plan generator =====
+  const EXERCISES = {
+    lose: {
+      label: "เป้าหมาย: ลดน้ำหนัก — เน้น Full Body + Cardio เผาแคลอรีส่วนเกิน",
+      note: "+ คาร์ดิโอ 15-20 นาที หลังเวท",
+      3: [
+        {focus:"Full Body A — ขา & หลัง", ex:["Barbell Squat 4x10","Lat Pulldown 3x12","Romanian Deadlift 3x10","Plank 3x45 วิ"]},
+        {focus:"Full Body B — อก & แกนกลาง", ex:["Bench Press 4x10","Dumbbell Row 3x12","Shoulder Press 3x10","Mountain Climbers 3x30 วิ"]},
+        {focus:"Full Body C — รวมทุกส่วน", ex:["Deadlift 4x8","Push-up 3x15","Lunges 3x12/ข้าง","Cable Crunch 3x15"]},
+      ],
+      4: [
+        {focus:"Upper Body A", ex:["Bench Press 4x10","Lat Pulldown 3x12","Shoulder Press 3x10","Tricep Pushdown 3x12"]},
+        {focus:"Lower Body A", ex:["Barbell Squat 4x10","Romanian Deadlift 3x10","Leg Press 3x12","Calf Raise 3x15"]},
+        {focus:"Upper Body B", ex:["Incline Dumbbell Press 3x12","Seated Row 3x12","Lateral Raise 3x15","Bicep Curl 3x12"]},
+        {focus:"Lower Body B + แกนกลาง", ex:["Walking Lunges 3x12/ข้าง","Hip Thrust 3x12","Leg Curl 3x12","Plank 3x45 วิ"]},
+      ],
+      5: [
+        {focus:"Push — อก/ไหล่/ไตรเซป", ex:["Bench Press 4x10","Shoulder Press 3x10","Lateral Raise 3x15","Tricep Dips 3x12"]},
+        {focus:"Pull — หลัง/ไบเซป", ex:["Deadlift 4x8","Lat Pulldown 3x12","Seated Row 3x12","Bicep Curl 3x12"]},
+        {focus:"Legs — ขาเต็มรูปแบบ", ex:["Barbell Squat 4x10","Leg Press 3x12","Romanian Deadlift 3x10","Calf Raise 3x15"]},
+        {focus:"Full Body Circuit", ex:["Goblet Squat 3x15","Push-up 3x15","Dumbbell Row 3x15","Burpee 3x10"]},
+        {focus:"Core & Cardio", ex:["Plank 3x60 วิ","Russian Twist 3x20","Mountain Climbers 3x30 วิ","คาร์ดิโอ 25 นาที"]},
+      ],
+    },
+    gain: {
+      label: "เป้าหมาย: เพิ่มกล้ามเนื้อ — เน้นน้ำหนักมาก เซตน้อย พักให้เต็มที่",
+      note: "เพิ่มน้ำหนัก 2.5-5% เมื่อทำครบเซตได้สบาย",
+      3: [
+        {focus:"Full Body A — เน้นแรงกด", ex:["Barbell Squat 5x6","Bench Press 5x6","Barbell Row 4x8","Plank 3x60 วิ"]},
+        {focus:"Full Body B — เน้นแรงดึง", ex:["Deadlift 5x5","Pull-up 4x8","Overhead Press 4x6","Hanging Leg Raise 3x12"]},
+        {focus:"Full Body C — เสริมกล้าม", ex:["Front Squat 4x8","Incline Bench Press 4x8","Lat Pulldown 4x10","Bicep Curl 3x10"]},
+      ],
+      4: [
+        {focus:"Upper — เน้นกด (Heavy)", ex:["Bench Press 5x5","Overhead Press 4x6","Weighted Dips 4x8","Tricep Pushdown 3x10"]},
+        {focus:"Lower — เน้นกด (Heavy)", ex:["Barbell Squat 5x5","Leg Press 4x8","Bulgarian Split Squat 3x10/ข้าง","Calf Raise 4x12"]},
+        {focus:"Upper — เน้นดึง", ex:["Deadlift 4x6","Pull-up 4x8","Barbell Row 4x8","Bicep Curl 4x10"]},
+        {focus:"Lower — เน้นดึง + แกนกลาง", ex:["Romanian Deadlift 4x8","Hip Thrust 4x10","Leg Curl 4x10","Cable Crunch 3x15"]},
+      ],
+      5: [
+        {focus:"Chest & Triceps", ex:["Bench Press 5x6","Incline Dumbbell Press 4x10","Cable Fly 3x12","Tricep Dips 4x10"]},
+        {focus:"Back & Biceps", ex:["Deadlift 5x5","Pull-up 4x8","Barbell Row 4x8","Bicep Curl 4x10"]},
+        {focus:"Legs", ex:["Barbell Squat 5x6","Romanian Deadlift 4x8","Leg Press 4x10","Calf Raise 4x15"]},
+        {focus:"Shoulders & Core", ex:["Overhead Press 5x6","Lateral Raise 4x12","Face Pull 3x15","Hanging Leg Raise 3x12"]},
+        {focus:"Arms & Weak Points", ex:["Close-Grip Bench Press 4x8","Barbell Curl 4x10","Skull Crusher 3x12","Hammer Curl 3x12"]},
+      ],
+    },
+    tone: {
+      label: "เป้าหมาย: กระชับสัดส่วน — น้ำหนักปานกลาง เซตสูง พักสั้น",
+      note: "พักระหว่างเซตสั้นลงเหลือ 30-45 วิ แบบ Circuit",
+      3: [
+        {focus:"Full Body Circuit A", ex:["Goblet Squat 3x15","Push-up 3x15","Dumbbell Row 3x15","Plank 3x45 วิ"]},
+        {focus:"Full Body Circuit B", ex:["Walking Lunges 3x12/ข้าง","Shoulder Press 3x15","Glute Bridge 3x15","Russian Twist 3x20"]},
+        {focus:"Full Body Circuit C", ex:["Deadlift (เบา) 3x12","Lat Pulldown 3x15","Step-up 3x12/ข้าง","Mountain Climbers 3x30 วิ"]},
+      ],
+      4: [
+        {focus:"Upper Toning A", ex:["Push-up 3x15","Dumbbell Row 3x15","Lateral Raise 3x15","Tricep Kickback 3x15"]},
+        {focus:"Lower Toning A", ex:["Goblet Squat 3x15","Glute Bridge 3x15","Leg Curl 3x15","Calf Raise 3x20"]},
+        {focus:"Upper Toning B", ex:["Incline Push-up 3x15","Seated Row 3x15","Front Raise 3x15","Bicep Curl 3x15"]},
+        {focus:"Lower Toning B + Core", ex:["Walking Lunges 3x12/ข้าง","Hip Thrust 3x15","Side Plank 3x30 วิ/ข้าง","Bicycle Crunch 3x20"]},
+      ],
+      5: [
+        {focus:"Glutes & Legs", ex:["Goblet Squat 3x15","Hip Thrust 3x15","Walking Lunges 3x12/ข้าง","Leg Curl 3x15"]},
+        {focus:"Arms & Shoulders", ex:["Push-up 3x15","Lateral Raise 3x15","Bicep Curl 3x15","Tricep Kickback 3x15"]},
+        {focus:"Back & Posture", ex:["Dumbbell Row 3x15","Lat Pulldown 3x15","Face Pull 3x15","Superman Hold 3x30 วิ"]},
+        {focus:"Core & Waist", ex:["Plank 3x60 วิ","Russian Twist 3x20","Bicycle Crunch 3x20","Side Plank 3x30 วิ/ข้าง"]},
+        {focus:"Full Body Conditioning", ex:["Step-up 3x12/ข้าง","Push-up 3x12","Glute Bridge 3x15","คาร์ดิโอเบา 20 นาที"]},
+      ],
+    }
+  };
+
+  const DAY_NAMES_FULL = {
+    3: ["จันทร์","พุธ","ศุกร์"],
+    4: ["จันทร์","อังคาร","พฤหัสบดี","ศุกร์"],
+    5: ["จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์"],
+  };
+
+  let currentGoal = 'lose';
+  let currentDays = 3;
+
+  function renderPlan(){
+    const data = EXERCISES[currentGoal][currentDays];
+    const dayNames = DAY_NAMES_FULL[currentDays];
+    document.getElementById('planTitle').textContent = EXERCISES[currentGoal].label + ` · ${currentDays} วัน/สัปดาห์`;
+    const container = document.getElementById('planDays');
+    container.innerHTML = '';
+    data.forEach((d, i)=>{
+      const card = document.createElement('div');
+      card.className = 'day-card';
+      const exList = d.ex.map(e=>`<li>${e}</li>`).join('');
+      card.innerHTML = `
+        <div class="day-num">DAY 0${i+1} — วัน${dayNames[i]}</div>
+        <h4>${d.focus}</h4>
+        <ul>${exList}</ul>
+        <div class="note">${EXERCISES[currentGoal].note}</div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  document.getElementById('goalPills').addEventListener('click', e=>{
+    const btn = e.target.closest('.pill');
+    if(!btn) return;
+    document.querySelectorAll('#goalPills .pill').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    currentGoal = btn.dataset.goal;
+    renderPlan();
+  });
+  document.getElementById('dayPills').addEventListener('click', e=>{
+    const btn = e.target.closest('.pill');
+    if(!btn) return;
+    document.querySelectorAll('#dayPills .pill').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    currentDays = parseInt(btn.dataset.days);
+    renderPlan();
+  });
+
+  renderPlan();
+</script>
+
+</body>
+</html>
