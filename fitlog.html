@@ -1308,8 +1308,8 @@
   // ถ้าปล่อยว่างไว้ เว็บจะยังทำงานได้ปกติแต่เก็บข้อมูลในเบราว์เซอร์นี้
   // เท่านั้น (ไม่ sync ข้ามอุปกรณ์) — ปุ่ม "เข้าสู่ระบบ" จะแจ้งเตือนให้ตั้งค่าก่อน
   // =====================================================================
-  const SUPABASE_URL = 'https://zuogjkzvoawuefbehffe.supabase.co';       // เช่น 'https://xxxxxxxx.supabase.co'
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1b2dqa3p2b2F3dWVmYmVoZmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzEzMjEsImV4cCI6MjA5Njg0NzMyMX0.7-vUl001siHNOh1OF1RXmvNtbD1Xqgx73eNWnLbi-YE';  // anon public key จาก Project Settings -> API
+  const SUPABASE_URL = '';       // เช่น 'https://xxxxxxxx.supabase.co'
+  const SUPABASE_ANON_KEY = '';  // anon public key จาก Project Settings -> API
 
   const supabaseClient = (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -1442,31 +1442,77 @@
 
   // ===== Visual progress — photo upload preview (saved to this browser) =====
   let photoData = loadLS('photos', {});
-  document.querySelectorAll('.photo-slot').forEach(slot=>{
-    const key = slot.dataset.slot;
-    if(photoData[key]){
-      slot.style.backgroundImage = `url(${photoData[key]})`;
-      slot.classList.add('has-image');
+
+  // โหลดรูปจาก Supabase Storage (ถ้าล็อกอินอยู่) หรือ localStorage (ถ้าไม่ได้ล็อกอิน)
+  async function loadPhotos(){
+    if(supabaseClient && currentUser){
+      const slots = ['front','side','back'];
+      for(const key of slots){
+        const path = `${currentUser.id}/${key}`;
+        const { data } = await supabaseClient.storage
+          .from('progress-photos')
+          .createSignedUrl(path, 3600); // URL หมดอายุใน 1 ชั่วโมง
+        if(data?.signedUrl){
+          const slot = document.querySelector(`.photo-slot[data-slot="${key}"]`);
+          if(slot){
+            slot.style.backgroundImage = `url(${data.signedUrl})`;
+            slot.classList.add('has-image');
+          }
+        }
+      }
+    } else {
+      // ไม่ได้ล็อกอิน — โหลดจาก localStorage
+      document.querySelectorAll('.photo-slot').forEach(slot=>{
+        const key = slot.dataset.slot;
+        if(photoData[key]){
+          slot.style.backgroundImage = `url(${photoData[key]})`;
+          slot.classList.add('has-image');
+        }
+      });
     }
-  });
+  }
+  loadPhotos();
+
   document.querySelectorAll('.photo-input').forEach(input=>{
-    input.addEventListener('change', e=>{
+    input.addEventListener('change', async e=>{
       const file = e.target.files && e.target.files[0];
       if(!file) return;
-      const reader = new FileReader();
-      reader.onload = ev=>{
-        const slot = input.closest('.photo-slot');
-        const key = slot.dataset.slot;
-        slot.style.backgroundImage = `url(${ev.target.result})`;
-        slot.classList.add('has-image');
-        photoData[key] = ev.target.result;
-        if(saveLS('photos', photoData)){
-          showToast('บันทึกรูปแล้ว — เก็บไว้ในเบราว์เซอร์นี้');
-        }else{
-          showToast('รูปมีขนาดใหญ่เกินไป บันทึกอัตโนมัติไม่สำเร็จ');
+      const slot = input.closest('.photo-slot');
+      const key = slot.dataset.slot;
+
+      // แสดง preview ทันที
+      const objectUrl = URL.createObjectURL(file);
+      slot.style.backgroundImage = `url(${objectUrl})`;
+      slot.classList.add('has-image');
+
+      if(supabaseClient && currentUser){
+        // อัปโหลดขึ้น Supabase Storage — ผูกกับ user_id ของคนล็อกอิน
+        showToast('กำลังอัปโหลดรูป...');
+        const path = `${currentUser.id}/${key}`;
+        const { error } = await supabaseClient.storage
+          .from('progress-photos')
+          .upload(path, file, { upsert: true, contentType: file.type });
+        if(error){
+          showToast('อัปโหลดรูปไม่สำเร็จ: ' + error.message);
+        } else {
+          showToast('อัปโหลดรูปสำเร็จ — เก็บไว้ใน Supabase Storage แล้ว ✅');
+          // ลบรูปเก่าออกจาก localStorage เพื่อไม่ให้สับสน
+          delete photoData[key];
+          saveLS('photos', photoData);
         }
-      };
-      reader.readAsDataURL(file);
+      } else {
+        // ไม่ได้ล็อกอิน — เก็บใน localStorage ชั่วคราว
+        const reader = new FileReader();
+        reader.onload = ev=>{
+          photoData[key] = ev.target.result;
+          if(saveLS('photos', photoData)){
+            showToast('บันทึกรูปในเบราว์เซอร์นี้แล้ว — ล็อกอินเพื่อ sync ข้ามอุปกรณ์');
+          } else {
+            showToast('รูปใหญ่เกินไป — ล็อกอินเพื่อใช้ Supabase Storage แทน');
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     });
   });
 
@@ -2046,7 +2092,7 @@
   // ===== PAYMENT CONFIG — ใส่ค่าของคุณที่นี่ =====
   const PAYMENT_CONFIG = {
     omisePublicKey:   '',   // เช่น 'pkey_test_xxxxxxxx' จาก Omise Dashboard → Keys
-    edgeFunctionUrl:  'https://zuogjkzvoawuefbehffe.supabase.co/functions/v1/fitlog-payment',   // เช่น 'https://xxx.supabase.co/functions/v1/fitlog-payment'
+    edgeFunctionUrl:  '',   // เช่น 'https://xxx.supabase.co/functions/v1/fitlog-payment'
   };
 
   // ===== Premium checkout (Omise + Stripe จริง) =====
@@ -2123,7 +2169,7 @@
       let gateway = selectedMethod === 'stripe' ? 'stripe' : 'omise';
 
       if(selectedMethod === 'credit_card'){
-        if(!PAYpkey_test_680i2799vashdqf516nMENT_CONFIG.omisePublicKey) throw new Error('ยังไม่ได้ตั้งค่า Omise Public Key');
+        if(!PAYMENT_CONFIG.omisePublicKey) throw new Error('ยังไม่ได้ตั้งค่า Omise Public Key');
         // ในการใช้งานจริง: token = await OmiseCard.createToken(...)
         token = 'tokn_test_placeholder';
       } else if(selectedMethod === 'promptpay'){
@@ -2445,11 +2491,8 @@
       const key = slot.dataset.slot;
       slot.classList.remove('has-image');
       slot.style.backgroundImage = '';
-      if(photoData[key]){
-        slot.style.backgroundImage = `url(${photoData[key]})`;
-        slot.classList.add('has-image');
-      }
     });
+    if(typeof loadPhotos === 'function') loadPhotos();
 
     bodyComp = loadLS('bodyComp', {fat: 21.4, muscle: 42.1});
     bodyCompHistory = loadLS('bodyCompHistory', []);
