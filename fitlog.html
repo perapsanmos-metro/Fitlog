@@ -1308,8 +1308,8 @@
   // ถ้าปล่อยว่างไว้ เว็บจะยังทำงานได้ปกติแต่เก็บข้อมูลในเบราว์เซอร์นี้
   // เท่านั้น (ไม่ sync ข้ามอุปกรณ์) — ปุ่ม "เข้าสู่ระบบ" จะแจ้งเตือนให้ตั้งค่าก่อน
   // =====================================================================
-  const SUPABASE_URL = '';       // เช่น 'https://xxxxxxxx.supabase.co'
-  const SUPABASE_ANON_KEY = '';  // anon public key จาก Project Settings -> API
+  const SUPABASE_URL = 'https://zuogjkzvoawuefbehffe.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1b2dqa3p2b2F3dWVmYmVoZmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzEzMjEsImV4cCI6MjA5Njg0NzMyMX0.7-vUl001siHNOh1OF1RXmvNtbD1Xqgx73eNWnLbi-YE';  // anon public key จาก Project Settings -> API
 
   const supabaseClient = (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -2091,8 +2091,8 @@
 
   // ===== PAYMENT CONFIG — ใส่ค่าของคุณที่นี่ =====
   const PAYMENT_CONFIG = {
-    omisePublicKey:   '',   // เช่น 'pkey_test_xxxxxxxx' จาก Omise Dashboard → Keys
-    edgeFunctionUrl:  '',   // เช่น 'https://xxx.supabase.co/functions/v1/fitlog-payment'
+    omisePublicKey:   'pkey_test_680i2799vashdqf516n',   // เช่น 'pkey_test_xxxxxxxx' จาก Omise Dashboard → Keys
+    edgeFunctionUrl:  'https://zuogjkzvoawuefbehffe.supabase.co/functions/v1/fitlog-payment',   // เช่น 'https://xxx.supabase.co/functions/v1/fitlog-payment'
   };
 
   // ===== Premium checkout (Omise + Stripe จริง) =====
