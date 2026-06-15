@@ -193,6 +193,30 @@
   .bc-delta{font-size:.74rem; color:var(--ink-soft); margin-top:8px; min-height:1.1em;}
   .bc-tip{font-size:.72rem; color:var(--ink-soft); margin-top:8px; line-height:1.6;}
 
+  /* ===== Premium lock overlays ===== */
+  .spark-lock{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    padding:14px; background:var(--bg); border:1.5px dashed var(--line);
+    border-radius:10px; text-align:center; font-size:.82rem; color:var(--ink-soft);
+  }
+  .spark-lock span{font-size:1.2rem;}
+  .spark-lock p{margin:0;}
+  .lock-row{
+    display:flex; align-items:center; gap:10px; background:var(--bg);
+    border:1.5px dashed var(--line); border-radius:10px; padding:12px 14px;
+    font-size:.85rem; color:var(--ink-soft); margin-top:10px;
+  }
+  .lock-row span{font-size:1.1rem;}
+
+  /* ===== Export CSV button ===== */
+  .export-wrap{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
+  #exportCsvBtn{display:none;}
+  #exportLockMsg{
+    display:flex; align-items:center; gap:10px; font-size:.82rem;
+    color:var(--ink-soft); padding:10px 14px; background:var(--bg);
+    border:1.5px dashed var(--line); border-radius:10px;
+  }
+
   /* ===== Calculator ===== */
   .calc-grid{
     display:grid; grid-template-columns:1fr 1fr; gap:0;
@@ -734,6 +758,10 @@
         <input type="number" id="newWeightInput" placeholder="บันทึกน้ำหนักวันนี้ (กก.)" step="0.1" min="30" max="250" aria-label="บันทึกน้ำหนักวันนี้">
         <button class="btn-add" id="addWeightBtn" type="button">+ บันทึก</button>
       </div>
+      <div class="export-wrap">
+        <button class="btn-secondary" id="exportCsvBtn" type="button" style="font-size:.85rem; padding:10px 18px;">📥 Export ประวัติน้ำหนักเป็น CSV</button>
+        <div id="exportLockMsg"><span>🔒</span> Export CSV สำหรับสมาชิก Premium เท่านั้น</div>
+      </div>
       <p class="hint">ทดลองกรอกน้ำหนัก แล้วกด "บันทึก" เพื่อดูกราฟอัปเดตทันที — เหมือนระบบจริงที่ผู้ใช้จะเห็นทุกครั้งที่ชั่งน้ำหนัก</p>
     </div>
   </div>
@@ -973,6 +1001,12 @@
     </div>
     <div class="plan-title" id="planTitle"></div>
     <div class="plan-days" id="planDays"></div>
+    <div id="personalizedNote" class="lock-row" style="display:none; margin-top:20px;">
+      <span>🔒</span>
+      <span>โปรแกรม Personalized ที่ปรับตามผลลัพธ์จริงของคุณ — สำหรับสมาชิก Premium
+        <button onclick="document.getElementById('premiumUpgradeBtn').click()" style="margin-left:10px; background:var(--accent); color:#fff; border:none; border-radius:999px; padding:4px 14px; font-size:.78rem; font-weight:700; cursor:pointer;">อัปเกรด</button>
+      </span>
+    </div>
   </div>
 </section>
 
@@ -1308,8 +1342,8 @@
   // ถ้าปล่อยว่างไว้ เว็บจะยังทำงานได้ปกติแต่เก็บข้อมูลในเบราว์เซอร์นี้
   // เท่านั้น (ไม่ sync ข้ามอุปกรณ์) — ปุ่ม "เข้าสู่ระบบ" จะแจ้งเตือนให้ตั้งค่าก่อน
   // =====================================================================
-  const SUPABASE_URL = 'https://zuogjkzvoawuefbehffe.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1b2dqa3p2b2F3dWVmYmVoZmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzEzMjEsImV4cCI6MjA5Njg0NzMyMX0.7-vUl001siHNOh1OF1RXmvNtbD1Xqgx73eNWnLbi-YE';  // anon public key จาก Project Settings -> API
+  const SUPABASE_URL = 'https://zuogjkzvoawuefbehffe.supabase.co/rest/v1/';       // เช่น 'https://xxxxxxxx.supabase.co'
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInVzZXJfaWQiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJyb2xlIjoiYW5vbiIsImV4cCI6MTk5OTk5OTk5OX0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';  // anon public key จาก Project Settings -> API
 
   const supabaseClient = (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -1437,6 +1471,7 @@
     saveLS('weight', weightData);
     calc();
     if(typeof renderGoal === 'function') renderGoal();
+    if(typeof updatePremiumUI === 'function') updatePremiumUI(loadLS('premium', false));
     showToast('บันทึกน้ำหนักแล้ว — ข้อมูลถูกเก็บไว้ในเบราว์เซอร์นี้');
   });
 
@@ -2245,6 +2280,79 @@
     const upgradeBtn = document.getElementById('premiumUpgradeBtn');
     if(badge) badge.style.display      = isPremium ? 'block' : 'none';
     if(upgradeBtn) upgradeBtn.textContent = isPremium ? 'จัดการ Subscription' : 'อัปเกรดเป็น Premium';
+
+    // ===== Lock / Unlock Features =====
+
+    // 1. ประวัติน้ำหนัก — Free: 10 รายการ, Premium: ไม่จำกัด
+    const MAX_FREE_WEIGHT = 10;
+    const addWeightBtn = document.getElementById('addWeightBtn');
+    if(addWeightBtn){
+      if(!isPremium && weightData.length >= MAX_FREE_WEIGHT){
+        addWeightBtn.disabled = true;
+        addWeightBtn.title = 'ครบ 10 รายการแล้ว — อัปเกรด Premium เพื่อบันทึกไม่จำกัด';
+        addWeightBtn.textContent = '🔒 เต็มแล้ว (Premium)';
+      } else {
+        addWeightBtn.disabled = false;
+        addWeightBtn.title = '';
+        addWeightBtn.textContent = '+ บันทึก';
+      }
+    }
+
+    // 2. Export CSV — Premium เท่านั้น
+    const exportBtn = document.getElementById('exportCsvBtn');
+    if(exportBtn){
+      exportBtn.style.display = isPremium ? 'block' : 'none';
+    }
+    const exportLock = document.getElementById('exportLockMsg');
+    if(exportLock){
+      exportLock.style.display = isPremium ? 'none' : 'flex';
+    }
+
+    // 3. กราฟแนวโน้มระยะยาว — Premium เท่านั้น
+    const sparkWraps = document.querySelectorAll('.spark-wrap');
+    sparkWraps.forEach(wrap=>{
+      const lock = wrap.querySelector('.spark-lock');
+      if(!isPremium){
+        if(!lock){
+          const lockEl = document.createElement('div');
+          lockEl.className = 'spark-lock';
+          lockEl.innerHTML = `<span>🔒</span><p>กราฟแนวโน้มสำหรับ Premium</p><button class="pill" onclick="document.getElementById('premiumUpgradeBtn').click()">อัปเกรด</button>`;
+          wrap.appendChild(lockEl);
+        }
+      } else {
+        if(lock) lock.remove();
+      }
+    });
+
+    // 4. โปรแกรม Personalized — Premium เท่านั้น
+    const personalizedNote = document.getElementById('personalizedNote');
+    if(personalizedNote){
+      personalizedNote.style.display = isPremium ? 'none' : 'flex';
+    }
+
+    // 5. แสดง banner แจ้งเตือน Free limit ที่ header
+    let freeBanner = document.getElementById('freeBanner');
+    if(!isPremium && currentUser){
+      if(!freeBanner){
+        freeBanner = document.createElement('div');
+        freeBanner.id = 'freeBanner';
+        freeBanner.style.cssText = `
+          background:var(--highlight); color:var(--ink); text-align:center;
+          padding:10px 20px; font-size:.85rem; font-weight:600;
+          display:flex; align-items:center; justify-content:center; gap:14px;
+        `;
+        freeBanner.innerHTML = `
+          <span>⭐ คุณใช้แพ็กเกจ Free อยู่ — บันทึกน้ำหนักได้อีก ${Math.max(0, MAX_FREE_WEIGHT - weightData.length)} รายการ</span>
+          <button onclick="document.getElementById('premiumUpgradeBtn').click()" style="background:var(--ink);color:#fff;border:none;border-radius:999px;padding:6px 16px;font-size:.8rem;font-weight:700;cursor:pointer;">อัปเกรด ฿129/เดือน</button>
+        `;
+        document.querySelector('header.nav').after(freeBanner);
+      } else {
+        freeBanner.querySelector('span').textContent = `⭐ คุณใช้แพ็กเกจ Free อยู่ — บันทึกน้ำหนักได้อีก ${Math.max(0, MAX_FREE_WEIGHT - weightData.length)} รายการ`;
+        freeBanner.style.display = 'flex';
+      }
+    } else {
+      if(freeBanner) freeBanner.style.display = 'none';
+    }
   }
 
   async function loadSubscriptionStatus(){
@@ -2267,6 +2375,33 @@
 
   // check saved premium flag on load (from localStorage)
   if(loadLS('premium', false)) updatePremiumUI(true);
+
+  // ===== Export CSV (Premium) =====
+  document.getElementById('exportCsvBtn').addEventListener('click', ()=>{
+    if(!weightData.length){ showToast('ยังไม่มีข้อมูลน้ำหนักที่จะ Export'); return; }
+    const rows = [['ครั้งที่','น้ำหนัก (กก.)']];
+    weightData.forEach((w,i)=> rows.push([i+1, w]));
+
+    // เพิ่มข้อมูลสัดส่วน
+    rows.push([]);
+    rows.push(['สัดส่วนร่างกายล่าสุด','']);
+    rows.push(['เอว (ซม.)', measurements.waist || '-']);
+    rows.push(['อก (ซม.)', measurements.chest || '-']);
+    rows.push(['แขน (ซม.)', measurements.arm || '-']);
+    rows.push(['ขา (ซม.)', measurements.leg || '-']);
+    rows.push(['% ไขมัน', bodyComp.fat]);
+    rows.push(['% กล้ามเนื้อ', bodyComp.muscle]);
+
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `FITLOG_export_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Export CSV สำเร็จ ✅');
+  });
 
   document.getElementById('premiumUpgradeBtn').addEventListener('click', openCheckout);
   document.getElementById('checkoutClose').addEventListener('click', closeCheckout);
