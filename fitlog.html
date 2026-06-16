@@ -1397,7 +1397,7 @@
   // ถ้าปล่อยว่างไว้ เว็บจะยังทำงานได้ปกติแต่เก็บข้อมูลในเบราว์เซอร์นี้
   // เท่านั้น (ไม่ sync ข้ามอุปกรณ์) — ปุ่ม "เข้าสู่ระบบ" จะแจ้งเตือนให้ตั้งค่าก่อน
   // =====================================================================
-  const SUPABASE_URL = 'https://zuogjkzvoawuefbehffe.supabase.co/rest/v1/';       // เช่น 'https://xxxxxxxx.supabase.co'
+  const SUPABASE_URL = 'https://zuogjkzvoawuefbehffe.supabase.co';       // เช่น 'https://xxxxxxxx.supabase.co'
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1b2dqa3p2b2F3dWVmYmVoZmYiLCJhbmQiOiJhbm9uX3B1YmxpYyIsImlhdCI6MTY4MzQ1NjgwMCwiZXhwIjoxOTk4ODM2ODAwfQ.8V5X9H8H8H8H8H8H8H8H8H8H8H8H8H8H8H8H8H8H8H8';  // anon public key จาก Project Settings -> API
 
   const supabaseClient = (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase)
