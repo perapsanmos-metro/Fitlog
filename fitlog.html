@@ -20,6 +20,59 @@
     --navy:#16222E;
     --line:#D7E0EA;
     --radius:14px;
+    --transition-theme: background .2s, color .2s, border-color .2s, box-shadow .2s;
+  }
+
+  /* ===== Dark Mode ===== */
+  [data-theme="dark"]{
+    --bg:#0F1923;
+    --grid:#1A2735;
+    --ink:#E8EFF5;
+    --ink-soft:#7A96AA;
+    --paper:#16222E;
+    --accent:#FF6B52;
+    --accent-soft:rgba(255,107,82,.12);
+    --highlight:#FFCB47;
+    --navy:#0A1219;
+    --line:#243547;
+    --radius:14px;
+  }
+  [data-theme="dark"] body{ color-scheme:dark; }
+  [data-theme="dark"] .grid-bg{
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size:28px 28px;
+  }
+  [data-theme="dark"] .nav{
+    background:rgba(15,25,35,.88);
+  }
+
+  /* ===== Theme & Lang toggle ===== */
+  .nav-controls{display:flex; align-items:center; gap:8px;}
+  .icon-btn{
+    width:36px; height:36px; border-radius:50%; border:1.5px solid var(--line);
+    background:var(--paper); color:var(--ink); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-size:.95rem;
+    transition:var(--transition-theme); flex-shrink:0;
+  }
+  .icon-btn:hover, .icon-btn:focus-visible{background:var(--accent); color:#fff; border-color:var(--accent);}
+  .lang-btn{
+    font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:.72rem;
+    padding:0 10px; border-radius:999px; height:36px;
+    border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
+    cursor:pointer; letter-spacing:.06em; transition:var(--transition-theme);
+  }
+  .lang-btn:hover, .lang-btn:focus-visible{background:var(--accent); color:#fff; border-color:var(--accent);}
+
+  /* smooth theme transitions on key elements */
+  body, header.nav, .log-card, .track-card, .calc-grid, .calc-form,
+  .calc-results, .price-card, .day-card, .lib-card, .meal-input-area,
+  .meal-summary, .goal-grid-2, .goal-form, .goal-result,
+  .auth-box, .checkout-box, .modal-box, .insight-panel, .insight-bmi,
+  .insight-detail, .reco-box, .macro-card, .stat-chip, .bc-input-grid input,
+  .auth-fields input, .pay-card-fields input, .field input, .field select {
+    transition: var(--transition-theme);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -722,7 +775,9 @@
       <a href="#library">คลังท่าเล่น</a>
       <a href="#pricing">แพ็กเกจ</a>
     </nav>
-    <div style="display:flex; gap:10px;">
+    <div class="nav-controls">
+      <button class="lang-btn" id="langBtn" type="button" aria-label="Switch language">EN</button>
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle dark mode">🌙</button>
       <button class="btn-secondary" id="navLoginBtn" type="button" style="padding:10px 20px; font-size:.88rem;">เข้าสู่ระบบ</button>
       <button class="nav-cta" id="navFreeBtn" type="button">เริ่มบันทึกฟรี</button>
     </div>
@@ -1342,8 +1397,8 @@
   // ถ้าปล่อยว่างไว้ เว็บจะยังทำงานได้ปกติแต่เก็บข้อมูลในเบราว์เซอร์นี้
   // เท่านั้น (ไม่ sync ข้ามอุปกรณ์) — ปุ่ม "เข้าสู่ระบบ" จะแจ้งเตือนให้ตั้งค่าก่อน
   // =====================================================================
-  const SUPABASE_URL = 'https://zuogjkzvoawuefbehffe.supabase.co';       // เช่น 'https://xxxxxxxx.supabase.co'
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1b2dqa3p2b2F3dWVmYmVoZmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzEzMjEsImV4cCI6MjA5Njg0NzMyMX0.7-vUl001siHNOh1OF1RXmvNtbD1Xqgx73eNWnLbi-YE';
+  const SUPABASE_URL = 'https://zuogjkzvoawuefbehffe.supabase.co/rest/v1/';       // เช่น 'https://xxxxxxxx.supabase.co'
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1b2dqa3p2b2F3dWVmYmVoZmYiLCJhbmQiOiJhbm9uX3B1YmxpYyIsImlhdCI6MTY4MzQ1NjgwMCwiZXhwIjoxOTk4ODM2ODAwfQ.8V5X9H8H8H8H8H8H8H8H8H8H8H8H8H8H8H8H8H8H8H8';  // anon public key จาก Project Settings -> API
 
   const supabaseClient = (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -1994,6 +2049,7 @@
   const EXERCISE_DATA = {
     squat: {
       tag:'ขา / สะโพก', name:'Barbell Squat', anim:'anim-squat', sets:'แนะนำ: 4 เซต x 8-10 ครั้ง',
+      youtubeId: 'iWSDVCVdSog',
       desc:'ท่าพื้นฐานที่ฝึกกล้ามเนื้อขาและสะโพกทั้งหมดในท่าเดียว เหมาะเป็นท่าหลักของวันเล่นขา',
       steps:[
         'ยืนแยกเท้าเท่าความกว้างไหล่ วางบาร์บนบ่าส่วนบน (ไม่ใช่คอ)',
@@ -2009,6 +2065,7 @@
     },
     bench: {
       tag:'อก / ไหล่', name:'Bench Press', anim:'anim-bench', sets:'แนะนำ: 4 เซต x 8-10 ครั้ง',
+      youtubeId: 'gRVjAtPip0Y',
       desc:'ท่าหลักสำหรับฝึกกล้ามเนื้อหน้าอก ไหล่ และไตรเซป ด้วยการดันบาร์ในแนวนอน',
       steps:[
         'นอนบนเบาะ ให้ตาอยู่ใต้บาร์เล็กน้อย ขาทั้งสองวางพื้นมั่นคง',
@@ -2024,6 +2081,7 @@
     },
     latpull: {
       tag:'หลัง', name:'Lat Pulldown', anim:'anim-latpull', sets:'แนะนำ: 3 เซต x 10-12 ครั้ง',
+      youtubeId: 'AOpi-p0cJkc',
       desc:'ฝึกกล้ามเนื้อหลังกว้างและสะบัก เหมาะสำหรับผู้ที่ยังดึงข้อตัวเองไม่ได้',
       steps:[
         'นั่งจับแกนดึงให้กว้างกว่าหัวไหล่เล็กน้อย ล็อกเข่าใต้เบาะรองขา',
@@ -2039,6 +2097,7 @@
     },
     rdl: {
       tag:'ขาหลัง / สะโพก', name:'Romanian Deadlift', anim:'anim-rdl', sets:'แนะนำ: 3 เซต x 8-10 ครั้ง',
+      youtubeId: '2SHsk9AzdjA',
       desc:'ฝึกกล้ามเนื้อต้นขาหลังและสะโพกผ่านการเหยียดสะโพก (hip hinge) เหมาะคู่กับท่าสควอท',
       steps:[
         'ยืนแยกเท้าเท่าสะโพก ถือบาร์หรือดัมเบลแนบหน้าขา',
@@ -2054,6 +2113,7 @@
     },
     plank: {
       tag:'แกนกลางลำตัว', name:'Plank', anim:'anim-plank', sets:'แนะนำ: 3 เซต x 30-60 วินาที',
+      youtubeId: 'ASdvN_XEl_c',
       desc:'ท่าค้างที่ฝึกความแข็งแรงของแกนกลางลำตัวและช่วยปรับสมดุลของหลัง',
       steps:[
         'วางข้อศอกบนพื้นใต้แนวหัวไหล่ ปลายเท้าจิกพื้น',
@@ -2069,6 +2129,7 @@
     },
     shoulder: {
       tag:'แขน / ไหล่', name:'Dumbbell Shoulder Press', anim:'anim-shoulder', sets:'แนะนำ: 3 เซต x 10-12 ครั้ง',
+      youtubeId: '0JfYxMRsUCQ',
       desc:'ฝึกกล้ามเนื้อไหล่และไตรเซปด้วยการดันดัมเบลขึ้นเหนือศีรษะ',
       steps:[
         'นั่งหรือยืน ถือดัมเบลไว้ระดับไหล่ ฝ่ามือหันไปด้านหน้า',
@@ -2096,7 +2157,40 @@
     document.getElementById('modalSets').textContent = data.sets;
     document.getElementById('modalSteps').innerHTML = data.steps.map(s=>`<li>${s}</li>`).join('');
     document.getElementById('modalMistakes').innerHTML = data.mistakes.map(s=>`<li>${s}</li>`).join('');
-    modalThumb.className = 'modal-thumb ' + data.anim;
+
+    // แสดง YouTube video ถ้ามี youtubeId
+    if(data.youtubeId){
+      modalThumb.className = 'modal-thumb';
+      modalThumb.innerHTML = `
+        <iframe
+          width="100%" height="220"
+          src="https://www.youtube.com/embed/${data.youtubeId}?rel=0&modestbranding=1"
+          title="${data.name} tutorial"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          style="display:block; border-radius:var(--radius) var(--radius) 0 0;"
+        ></iframe>
+      `;
+    } else {
+      modalThumb.className = 'modal-thumb ' + data.anim;
+      modalThumb.innerHTML = `
+        <span class="gif-badge">DEMO</span>
+        <svg class="fig" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle class="fig-head" cx="50" cy="18" r="7"/>
+          <line class="fig-torso" x1="50" y1="25" x2="50" y2="58"/>
+          <g class="fig-arms">
+            <line x1="50" y1="32" x2="32" y2="48"/>
+            <line x1="50" y1="32" x2="68" y2="48"/>
+          </g>
+          <g class="fig-legs">
+            <line x1="50" y1="58" x2="38" y2="88"/>
+            <line x1="50" y1="58" x2="62" y2="88"/>
+          </g>
+        </svg>
+      `;
+    }
+
     exerciseModal.classList.add('open');
     document.body.style.overflow = 'hidden';
     document.getElementById('modalClose').focus();
@@ -2104,6 +2198,8 @@
   function closeExerciseModal(){
     exerciseModal.classList.remove('open');
     document.body.style.overflow = '';
+    // หยุดวิดีโอ YouTube เมื่อปิด modal
+    modalThumb.innerHTML = '';
   }
   document.querySelectorAll('.lib-card').forEach(card=>{
     card.addEventListener('click', ()=> openExerciseModal(card.dataset.ex));
@@ -2681,6 +2777,119 @@
 
   document.addEventListener('keydown', e=>{
     if(e.key === 'Escape'){ closeExerciseModal(); closeCheckout(); closeAuth(); }
+  });
+
+  // ===== Dark Mode =====
+  const themeBtn = document.getElementById('themeBtn');
+  let isDark = loadLS('theme', 'light') === 'dark';
+  function applyTheme(){
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    themeBtn.textContent = isDark ? '☀️' : '🌙';
+    themeBtn.title = isDark ? 'สลับเป็น Light Mode' : 'สลับเป็น Dark Mode';
+  }
+  applyTheme();
+  themeBtn.addEventListener('click', ()=>{
+    isDark = !isDark;
+    saveLS('theme', isDark ? 'dark' : 'light');
+    applyTheme();
+  });
+
+  // ===== EN / TH Language =====
+  const LANG = {
+    th:{
+      navTracking:'บันทึกร่างกาย', navGoals:'เป้าหมาย', navCalc:'คำนวณแคลอรี',
+      navPrograms:'โปรแกรมเล่น', navLibrary:'คลังท่าเล่น', navPricing:'แพ็กเกจ',
+      navLogin:'เข้าสู่ระบบ', navFree:'เริ่มบันทึกฟรี',
+      heroEyebrow:'สมุดบันทึกฉบับดิจิทัล',
+      heroH1:'ตัวเลขบนตาชั่ง<br>คือ<span class="hl">ข้อมูล</span> ไม่ใช่คำตัดสิน',
+      heroLead:'บันทึกน้ำหนัก สัดส่วน และเปอร์เซ็นต์ไขมัน ทุกสัปดาห์ แล้วดูกราฟพัฒนาการของตัวเองแบบจับต้องได้ พร้อมโปรแกรมออกกำลังกายที่ออกแบบมาให้พอดีกับวันที่คุณเข้ายิมจริง',
+      heroBtn1:'คำนวณแคลอรีของฉัน', heroBtn2:'ดูระบบบันทึกร่างกาย',
+      heroWeightTitle:'น้ำหนักตัว — บันทึกล่าสุด',
+      heroPlaceholder:'บันทึกน้ำหนักวันนี้ (กก.)', heroBtnAdd:'+ บันทึก',
+      heroHint:'ทดลองกรอกน้ำหนัก แล้วกด "บันทึก" เพื่อดูกราฟอัปเดตทันที',
+      trackEyebrow:'Advanced Tracking', trackH2:'บันทึกร่างกายให้ลึกกว่าตัวเลขเดียว',
+      calcEyebrow:'BMR & TDEE Calculator', calcH2:'รู้ก่อนว่าวันนี้ร่างกายคุณต้องการแคลอรีเท่าไหร่',
+      programEyebrow:'Workout Routine Generator', programH2:'เลือกเป้าหมายและจำนวนวัน รับโปรแกรมทันที',
+      mealEyebrow:'Macro Tracker', mealH2:'วันนี้คุณทานพอดีกับเป้าหมายแล้วหรือยัง?',
+      libEyebrow:'Exercise Library', libH2:'คลังท่าออกกำลังกาย พร้อมฟอร์มที่ถูกต้อง',
+      goalEyebrow:'Goal Setting', goalH2:'ตั้งเป้าหมายน้ำหนัก แล้วดูว่าตามแผนปัจจุบันจะถึงเมื่อไหร่',
+      pricingEyebrow:'Free vs Premium', pricingH2:'เริ่มฟรี แล้วอัปเกรดเมื่อพร้อมไปต่อ',
+    },
+    en:{
+      navTracking:'Body Tracking', navGoals:'Goals', navCalc:'Calorie Calc',
+      navPrograms:'Workouts', navLibrary:'Exercises', navPricing:'Pricing',
+      navLogin:'Sign In', navFree:'Start Free',
+      heroEyebrow:'Your Digital Training Log',
+      heroH1:'Numbers on the scale<br>are <span class="hl">data</span>, not a verdict',
+      heroLead:'Log your weight, body measurements, and body fat every week. See your progress chart in real time — paired with a workout program designed around the days you actually go to the gym.',
+      heroBtn1:'Calculate My Calories', heroBtn2:'See Body Tracking',
+      heroWeightTitle:'Body Weight — Latest Log',
+      heroPlaceholder:'Log today\'s weight (kg)', heroBtnAdd:'+ Log',
+      heroHint:'Enter your weight and tap "Log" to see the chart update instantly.',
+      trackEyebrow:'Advanced Tracking', trackH2:'Track more than just a number',
+      calcEyebrow:'BMR & TDEE Calculator', calcH2:'Find out exactly how many calories your body needs today',
+      programEyebrow:'Workout Routine Generator', programH2:'Pick your goal and days per week — get a plan instantly',
+      mealEyebrow:'Macro Tracker', mealH2:'Have you hit your calorie target today?',
+      libEyebrow:'Exercise Library', libH2:'Exercise library with proper form guides',
+      goalEyebrow:'Goal Setting', goalH2:'Set a target weight and see when you\'ll get there',
+      pricingEyebrow:'Free vs Premium', pricingH2:'Start free, upgrade when you\'re ready',
+    },
+  };
+
+  const LANG_TARGETS = [
+    ['nav a[href="#tracking"]','navTracking','text'],
+    ['nav a[href="#goals"]','navGoals','text'],
+    ['nav a[href="#calculator"]','navCalc','text'],
+    ['nav a[href="#programs"]','navPrograms','text'],
+    ['nav a[href="#library"]','navLibrary','text'],
+    ['nav a[href="#pricing"]','navPricing','text'],
+    ['#navLoginBtn','navLogin','text'],
+    ['#navFreeBtn','navFree','text'],
+    ['.hero .eyebrow','heroEyebrow','text'],
+    ['.hero h1','heroH1','html'],
+    ['p.lead','heroLead','text'],
+    ['a[href="#calculator"].btn-primary','heroBtn1','text'],
+    ['a[href="#tracking"].btn-secondary','heroBtn2','text'],
+    ['#heroChart .log-card-head h3','heroWeightTitle','text'],
+    ['#newWeightInput','heroPlaceholder','placeholder'],
+    ['#addWeightBtn','heroBtnAdd','text'],
+    ['#tracking .eyebrow','trackEyebrow','text'],
+    ['#tracking h2','trackH2','text'],
+    ['#calculator .eyebrow','calcEyebrow','text'],
+    ['#calculator h2','calcH2','text'],
+    ['#programs .eyebrow','programEyebrow','text'],
+    ['#programs h2','programH2','text'],
+    ['#meals .eyebrow','mealEyebrow','text'],
+    ['#meals h2','mealH2','text'],
+    ['#library .eyebrow','libEyebrow','text'],
+    ['#library h2','libH2','text'],
+    ['#goals .eyebrow','goalEyebrow','text'],
+    ['#goals h2','goalH2','text'],
+    ['#pricing .eyebrow','pricingEyebrow','text'],
+    ['#pricing h2','pricingH2','text'],
+  ];
+
+  let currentLang = loadLS('lang','th');
+  const langBtn = document.getElementById('langBtn');
+
+  function applyLang(){
+    const t = LANG[currentLang];
+    langBtn.textContent = currentLang==='th' ? 'EN' : 'TH';
+    langBtn.title = currentLang==='th' ? 'Switch to English' : 'เปลี่ยนเป็นภาษาไทย';
+    LANG_TARGETS.forEach(([sel,key,prop])=>{
+      const el = document.querySelector(sel);
+      if(!el||!t[key]) return;
+      if(prop==='text') el.textContent = t[key];
+      else if(prop==='html') el.innerHTML = t[key];
+      else if(prop==='placeholder') el.placeholder = t[key];
+    });
+    document.documentElement.lang = currentLang==='th' ? 'th' : 'en';
+  }
+  applyLang();
+  langBtn.addEventListener('click', ()=>{
+    currentLang = currentLang==='th' ? 'en' : 'th';
+    saveLS('lang', currentLang);
+    applyLang();
   });
 
   calc();
