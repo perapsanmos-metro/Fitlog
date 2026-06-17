@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#FF4B33">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FITLOG">
+<meta name="description" content="บันทึกน้ำหนัก คำนวณแคลอรี่ และติดตามพัฒนาการร่างกายในที่เดียว">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="https://placehold.co/192x192/FF4B33/fff?text=FL">
 <title>FITLOG — สมุดบันทึกการออกกำลังกาย</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -245,6 +252,92 @@
   .track-card .btn-add{width:100%; margin-top:10px;}
   .bc-delta{font-size:.74rem; color:var(--ink-soft); margin-top:8px; min-height:1.1em;}
   .bc-tip{font-size:.72rem; color:var(--ink-soft); margin-top:8px; line-height:1.6;}
+
+  /* ===== Google Sign-In button ===== */
+  .btn-google{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    width:100%; padding:13px 20px; border-radius:10px;
+    border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans Thai',sans-serif; font-weight:600; font-size:.95rem;
+    cursor:pointer; transition:all .15s; margin-bottom:12px;
+  }
+  .btn-google:hover, .btn-google:focus-visible{
+    border-color:var(--accent); box-shadow:0 4px 16px rgba(255,75,51,.15);
+  }
+  .btn-google img{width:20px; height:20px;}
+  .auth-divider{
+    display:flex; align-items:center; gap:12px; margin:12px 0;
+    font-size:.8rem; color:var(--ink-soft);
+  }
+  .auth-divider::before, .auth-divider::after{
+    content:""; flex:1; height:1px; background:var(--line);
+  }
+
+  /* ===== Dashboard (Post-login view) ===== */
+  #dashboardView{display:none;}
+  #landingView{}
+  .dashboard-wrap{max-width:1100px; margin:0 auto; padding:32px 24px;}
+  .dash-greeting{margin-bottom:28px;}
+  .dash-greeting h2{font-family:'Kanit',sans-serif; font-weight:900; font-size:clamp(1.6rem,3vw,2.2rem);}
+  .dash-greeting p{color:var(--ink-soft); font-size:.95rem; margin-top:4px;}
+  .dash-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px;}
+  .dash-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    padding:20px; display:flex; flex-direction:column; gap:6px;
+  }
+  .dash-card .d-label{font-size:.72rem; font-family:'IBM Plex Mono',monospace; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft);}
+  .dash-card .d-val{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:1.8rem; line-height:1;}
+  .dash-card .d-sub{font-size:.78rem; color:var(--ink-soft);}
+  .dash-card.accent{background:var(--accent); color:#fff; border-color:var(--accent);}
+  .dash-card.accent .d-label, .dash-card.accent .d-sub{color:rgba(255,255,255,.75);}
+  .dash-card.accent .d-val{color:#fff;}
+  .dash-chart-wrap{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    padding:24px; margin-bottom:24px;
+  }
+  .dash-chart-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+  .dash-chart-head h3{font-size:1rem; font-weight:700;}
+  .dash-chart-head .dash-delta{font-family:'IBM Plex Mono',monospace; font-weight:700; color:#1F9D55; font-size:.9rem;}
+  .dash-quick-actions{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px;}
+  .dash-action{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px; text-align:center; cursor:pointer; transition:all .12s;
+    font-size:.88rem; font-weight:600; color:var(--ink-soft);
+  }
+  .dash-action:hover{border-color:var(--accent); color:var(--accent); transform:translateY(-2px);}
+  .dash-action .da-icon{font-size:1.5rem; margin-bottom:8px;}
+
+  /* ===== PWA Install banner ===== */
+  #pwaInstallBanner{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:var(--navy); color:#fff; border-radius:var(--radius);
+    padding:14px 20px; display:none; align-items:center; gap:14px;
+    font-size:.88rem; z-index:300; box-shadow:0 8px 32px rgba(0,0,0,.3);
+    max-width:90vw; width:380px;
+  }
+  #pwaInstallBanner.show{display:flex;}
+  #pwaInstallBanner strong{display:block; margin-bottom:2px;}
+  #pwaInstallBanner p{font-size:.78rem; color:#9FB3C4; margin:0;}
+  .pwa-btns{display:flex; gap:8px; flex-shrink:0;}
+  .pwa-btns button{
+    font-family:'IBM Plex Sans Thai',sans-serif; font-weight:700; font-size:.82rem;
+    padding:8px 14px; border-radius:8px; cursor:pointer; border:none;
+  }
+  #pwaInstallBtn{background:var(--accent); color:#fff;}
+  #pwaDismissBtn{background:transparent; color:#9FB3C4; border:1px solid #243547 !important;}
+
+  /* ===== Hero CTA single button ===== */
+  .hero-single-cta{
+    display:inline-flex; align-items:center; gap:10px;
+    font-family:'IBM Plex Sans Thai',sans-serif; font-weight:700; font-size:1.05rem;
+    padding:16px 36px; border-radius:999px; background:var(--accent); color:#fff;
+    border:none; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease;
+    text-decoration:none;
+  }
+  .hero-single-cta:hover, .hero-single-cta:focus-visible{
+    transform:translateY(-3px); box-shadow:0 10px 28px rgba(255,75,51,.35);
+  }
+  .hero-sub-text{font-size:.82rem; color:var(--ink-soft); margin-top:10px;}
 
   /* ===== Premium lock overlays ===== */
   .spark-lock{
@@ -784,16 +877,17 @@
   </div>
 </header>
 
+<div id="landingView">
 <section class="hero grid-bg">
   <div class="wrap hero-inner">
     <div>
       <div class="eyebrow">สมุดบันทึกฉบับดิจิทัล</div>
       <h1>ตัวเลขบนตาชั่ง<br>คือ<span class="hl">ข้อมูล</span> ไม่ใช่คำตัดสิน</h1>
-      <p class="lead">บันทึกน้ำหนัก สัดส่วน และเปอร์เซ็นต์ไขมัน ทุกสัปดาห์ แล้วดูกราฟพัฒนาการของตัวเองแบบจับต้องได้ พร้อมโปรแกรมออกกำลังกายที่ออกแบบมาให้พอดีกับวันที่คุณเข้ายิมจริง</p>
-      <div class="hero-actions">
-        <a href="#calculator" class="btn-primary">คำนวณแคลอรีของฉัน</a>
-        <a href="#tracking" class="btn-secondary">ดูระบบบันทึกร่างกาย</a>
-      </div>
+      <p class="lead">ติดตามน้ำหนัก คำนวณแคลอรี่ และบันทึกพัฒนาการร่างกายในที่เดียว</p>
+      <button class="hero-single-cta" id="heroMainCta" type="button">
+        <span>🚀</span> เริ่มใช้งานฟรี
+      </button>
+      <p class="hero-sub-text">ไม่ต้องกรอกฟอร์ม — ล็อกอินด้วย Google ได้เลย</p>
     </div>
 
     <div class="log-card" id="heroChart">
@@ -821,6 +915,71 @@
     </div>
   </div>
 </section>
+</div><!-- end #landingView -->
+
+<!-- ===== Dashboard (แสดงหลัง login) ===== -->
+<div id="dashboardView">
+  <div class="dashboard-wrap">
+    <div class="dash-greeting">
+      <h2>สวัสดี, <span id="dashName">ผู้ใช้</span> 👋</h2>
+      <p>นี่คือภาพรวมสุขภาพของคุณวันนี้</p>
+    </div>
+
+    <div class="dash-grid">
+      <div class="dash-card accent">
+        <div class="d-label">น้ำหนักล่าสุด</div>
+        <div class="d-val" id="dashWeight">—</div>
+        <div class="d-sub" id="dashWeightSub">ยังไม่มีข้อมูล</div>
+      </div>
+      <div class="dash-card">
+        <div class="d-label">BMI</div>
+        <div class="d-val" id="dashBmi">—</div>
+        <div class="d-sub" id="dashBmiCat">กรอกข้อมูลในเครื่องคำนวณ</div>
+      </div>
+      <div class="dash-card">
+        <div class="d-label">เป้าหมาย</div>
+        <div class="d-val" id="dashGoal">—</div>
+        <div class="d-sub" id="dashGoalSub">ยังไม่ได้ตั้งเป้าหมาย</div>
+      </div>
+      <div class="dash-card">
+        <div class="d-label">แคลอรี่วันนี้</div>
+        <div class="d-val" id="dashCalToday">—</div>
+        <div class="d-sub" id="dashCalSub">เป้าหมาย: — kcal</div>
+      </div>
+    </div>
+
+    <div class="dash-chart-wrap">
+      <div class="dash-chart-head">
+        <h3>กราฟน้ำหนัก</h3>
+        <div class="dash-delta" id="dashDelta">—</div>
+      </div>
+      <div style="height:160px; position:relative;">
+        <svg id="dashChartSvg" width="100%" height="160" viewBox="0 0 600 160" preserveAspectRatio="none"></svg>
+      </div>
+    </div>
+
+    <div class="dash-quick-actions">
+      <div class="dash-action" onclick="showLanding(); setTimeout(()=>document.getElementById('newWeightInput').focus(),300)">
+        <div class="da-icon">⚖️</div>บันทึกน้ำหนัก
+      </div>
+      <div class="dash-action" onclick="showLanding(); setTimeout(()=>document.getElementById('calculator').scrollIntoView({behavior:'smooth'}),300)">
+        <div class="da-icon">🔢</div>คำนวณแคลอรี่
+      </div>
+      <div class="dash-action" onclick="showLanding(); setTimeout(()=>document.getElementById('meals').scrollIntoView({behavior:'smooth'}),300)">
+        <div class="da-icon">🍽️</div>บันทึกมื้ออาหาร
+      </div>
+      <div class="dash-action" onclick="showLanding(); setTimeout(()=>document.getElementById('programs').scrollIntoView({behavior:'smooth'}),300)">
+        <div class="da-icon">💪</div>โปรแกรมเล่น
+      </div>
+      <div class="dash-action" onclick="showLanding(); setTimeout(()=>document.getElementById('goals').scrollIntoView({behavior:'smooth'}),300)">
+        <div class="da-icon">🎯</div>เป้าหมาย
+      </div>
+      <div class="dash-action" onclick="document.getElementById('exportCsvBtn').click()">
+        <div class="da-icon">📥</div>Export CSV
+      </div>
+    </div>
+  </div>
+</div>
 
 <section id="tracking" class="alt">
   <div class="wrap">
@@ -1252,20 +1411,37 @@
   <div class="modal-box auth-box">
     <button class="modal-close" id="authClose" type="button" aria-label="ปิด">✕</button>
     <div class="modal-body">
-      <div class="lib-tag">SUPABASE LOGIN</div>
-      <h3 id="authTitle">เข้าสู่ระบบ</h3>
-      <p>เข้าสู่ระบบหรือสมัครสมาชิก เพื่อให้ข้อมูลของคุณ (น้ำหนัก รูป สัดส่วน มื้ออาหาร เป้าหมาย) sync และเปิดดูได้จากทุกอุปกรณ์</p>
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="authTabLogin" type="button">เข้าสู่ระบบ</button>
-        <button class="auth-tab" id="authTabSignup" type="button">สมัครสมาชิก</button>
+      <div class="lib-tag">FITLOG LOGIN</div>
+      <h3 id="authTitle">เข้าสู่ระบบ / สมัครสมาชิก</h3>
+      <p style="color:var(--ink-soft); font-size:.88rem; margin-bottom:18px;">ข้อมูลทั้งหมด sync ข้ามอุปกรณ์อัตโนมัติเมื่อล็อกอิน</p>
+
+      <!-- Google Sign-In (Primary) -->
+      <button class="btn-google" id="googleSignInBtn" type="button">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20">
+        <span>ดำเนินการต่อด้วย Google</span>
+      </button>
+
+      <!-- Email toggle -->
+      <button type="button" id="authEmailToggle" style="
+        width:100%; background:none; border:none; color:var(--ink-soft);
+        font-size:.82rem; cursor:pointer; padding:10px 0; text-align:center;
+        font-family:'IBM Plex Sans Thai',sans-serif;
+      ">หรือใช้อีเมล ▾</button>
+
+      <div id="authEmailSection" style="display:none;">
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="authTabLogin" type="button">เข้าสู่ระบบ</button>
+          <button class="auth-tab" id="authTabSignup" type="button">สมัครสมาชิก</button>
+        </div>
+        <div class="auth-fields">
+          <input type="email" id="authEmail" placeholder="อีเมล">
+          <input type="password" id="authPassword" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)">
+        </div>
+        <button class="btn-primary" id="authSubmitBtn" type="button" style="width:100%; text-align:center; border:none;">เข้าสู่ระบบ</button>
       </div>
-      <div class="auth-fields">
-        <input type="email" id="authEmail" placeholder="อีเมล">
-        <input type="password" id="authPassword" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)">
-      </div>
-      <button class="btn-primary" id="authSubmitBtn" type="button" style="width:100%; text-align:center; border:none;">เข้าสู่ระบบ</button>
-      <div class="auth-note">
-        * เชื่อมต่อกับ Supabase จริง — ถ้ายังไม่ได้ใส่ค่า SUPABASE_URL / SUPABASE_ANON_KEY ในโค้ด ระบบจะแจ้งเตือนให้ตั้งค่าก่อน เมื่อเข้าสู่ระบบสำเร็จ ข้อมูลทั้งหมดจะ sync ขึ้นฐานข้อมูล และดึงกลับมาได้จากทุกอุปกรณ์ที่ล็อกอินด้วยบัญชีเดียวกัน
+
+      <div class="auth-note" style="margin-top:14px;">
+        🔒 ข้อมูลของคุณถูกเก็บอย่างปลอดภัยใน Supabase — ไม่มีการแชร์ให้บุคคลที่สาม
       </div>
     </div>
   </div>
@@ -1382,6 +1558,17 @@
         <button class="btn-primary cta-premium" id="checkoutDoneBtn" type="button">เริ่มใช้งาน Premium 🎉</button>
       </div>
     </div>
+  </div>
+</div>
+
+<div id="pwaInstallBanner">
+  <div style="flex:1;">
+    <strong>ติดตั้ง FITLOG บนมือถือ</strong>
+    <p>เข้าใช้งานได้เร็วขึ้น ใช้ได้แบบ offline</p>
+  </div>
+  <div class="pwa-btns">
+    <button id="pwaInstallBtn" type="button">ติดตั้ง</button>
+    <button id="pwaDismissBtn" type="button">ไว้ทีหลัง</button>
   </div>
 </div>
 
@@ -2222,8 +2409,8 @@
 
   // ===== PAYMENT CONFIG — ใส่ค่าของคุณที่นี่ =====
   const PAYMENT_CONFIG = {
-    omisePublicKey:   'pkey_test_680i2799vashdqf516n',   // เช่น 'pkey_test_xxxxxxxx' จาก Omise Dashboard → Keys
-    edgeFunctionUrl:  'https://zuogjkzvoawuefbehffe.supabase.co/functions/v1/fitlog-payment',   // เช่น 'https://xxx.supabase.co/functions/v1/fitlog-payment'
+    omisePublicKey: 'pkey_test_680i2799vashdqf516n',
+    edgeFunctionUrl: 'https://zuogjkzvoawuefbehffe.supabase.co/functions/v1/fitlog-payment',   // เช่น 'https://xxx.supabase.co/functions/v1/fitlog-payment'
   };
 
   // ===== Premium checkout (Omise + Stripe จริง) =====
@@ -2605,6 +2792,15 @@
   authTabLogin.addEventListener('click', ()=> setAuthMode('login'));
   authTabSignup.addEventListener('click', ()=> setAuthMode('signup'));
 
+  // toggle email section
+  document.getElementById('authEmailToggle').addEventListener('click', ()=>{
+    const sec = document.getElementById('authEmailSection');
+    const btn = document.getElementById('authEmailToggle');
+    const isHidden = sec.style.display === 'none';
+    sec.style.display = isHidden ? '' : 'none';
+    btn.textContent = isHidden ? 'ซ่อนแบบฟอร์มอีเมล ▴' : 'หรือใช้อีเมล ▾';
+  });
+
   function openAuth(){
     setAuthMode('login');
     authModal.classList.add('open');
@@ -2616,19 +2812,31 @@
   }
   function updateAuthUI(){
     if(currentUser){
-      navLoginBtn.textContent = 'ออกจากระบบ (' + currentUser.email.split('@')[0] + ')';
+      const name = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'ผู้ใช้';
+      navLoginBtn.textContent = name + ' ▸ Dashboard';
+      navLoginBtn.onclick = ()=> showDashboard();
+      showDashboard();
     }else{
       navLoginBtn.textContent = 'เข้าสู่ระบบ';
+      navLoginBtn.onclick = ()=> openAuth();
+      showLanding();
     }
   }
 
   navLoginBtn.addEventListener('click', ()=>{
     if(currentUser && supabaseClient){
-      supabaseClient.auth.signOut().then(()=>{
-        currentUser = null;
-        updateAuthUI();
-        showToast('ออกจากระบบแล้ว — ข้อมูลในเบราว์เซอร์นี้ยังอยู่ครบ');
-      });
+      if(document.getElementById('dashboardView').style.display !== 'none'){
+        // already on dashboard — offer sign out
+        if(confirm('ออกจากระบบ?')){
+          supabaseClient.auth.signOut().then(()=>{
+            currentUser = null;
+            updateAuthUI();
+            showToast('ออกจากระบบแล้ว');
+          });
+        }
+        return;
+      }
+      showDashboard();
     }else{
       openAuth();
     }
@@ -2778,6 +2986,135 @@
   document.addEventListener('keydown', e=>{
     if(e.key === 'Escape'){ closeExerciseModal(); closeCheckout(); closeAuth(); }
   });
+
+  // ===== Dashboard & Landing toggle =====
+  function showDashboard(){
+    document.getElementById('landingView').style.display = 'none';
+    document.getElementById('dashboardView').style.display = 'block';
+    renderDashboard();
+  }
+  function showLanding(){
+    document.getElementById('landingView').style.display = '';
+    document.getElementById('dashboardView').style.display = 'none';
+  }
+
+  function renderDashboard(){
+    // Name
+    const name = currentUser?.user_metadata?.full_name
+      || currentUser?.email?.split('@')[0]
+      || 'ผู้ใช้';
+    document.getElementById('dashName').textContent = name;
+
+    // Weight
+    const w = weightData.length ? weightData[weightData.length-1] : null;
+    document.getElementById('dashWeight').textContent = w ? w.toFixed(1)+' กก.' : '—';
+    if(weightData.length >= 2){
+      const diff = weightData[weightData.length-1] - weightData[0];
+      document.getElementById('dashWeightSub').textContent =
+        (diff > 0 ? '▲ +' : '▼ ') + Math.abs(diff).toFixed(1) + ' กก. จากเริ่มต้น';
+      const deltaEl = document.getElementById('dashDelta');
+      deltaEl.textContent = (diff > 0 ? '+' : '') + diff.toFixed(1) + ' กก.';
+      deltaEl.style.color = diff <= 0 ? '#1F9D55' : 'var(--accent)';
+    } else {
+      document.getElementById('dashWeightSub').textContent = 'บันทึกน้ำหนักแรกของคุณ';
+    }
+
+    // BMI
+    const h = parseFloat(document.getElementById('height')?.value);
+    const bmiV = (w && h) ? (w / ((h/100)**2)).toFixed(1) : null;
+    document.getElementById('dashBmi').textContent = bmiV || '—';
+    if(bmiV){
+      const b = parseFloat(bmiV);
+      document.getElementById('dashBmiCat').textContent =
+        b < 18.5 ? 'น้ำหนักต่ำกว่าเกณฑ์' :
+        b < 23   ? 'สมส่วน ✅' :
+        b < 25   ? 'น้ำหนักเกิน' :
+        b < 30   ? 'อ้วนระดับ 1' : 'อ้วนระดับ 2';
+    }
+
+    // Goal
+    if(goalData?.weight){
+      document.getElementById('dashGoal').textContent = goalData.weight + ' กก.';
+      if(w) document.getElementById('dashGoalSub').textContent =
+        'เหลืออีก ' + Math.abs(w - goalData.weight).toFixed(1) + ' กก.';
+    } else {
+      document.getElementById('dashGoal').textContent = '—';
+      document.getElementById('dashGoalSub').textContent = 'ยังไม่ได้ตั้งเป้าหมาย';
+    }
+
+    // Calories today
+    const consumed = meals.reduce((s,m)=>s+m.kcal, 0);
+    document.getElementById('dashCalToday').textContent = consumed ? consumed.toLocaleString()+' kcal' : '—';
+    document.getElementById('dashCalSub').textContent = 'เป้าหมาย: ' + (currentTargetCalories||'—') + ' kcal';
+
+    // Mini chart
+    const svg = document.getElementById('dashChartSvg');
+    const n = weightData.length;
+    if(n < 2){ svg.innerHTML = '<text x="20" y="80" font-size="12" fill="#9FB3C4" font-family="IBM Plex Mono,monospace">บันทึกน้ำหนักอย่างน้อย 2 ครั้งเพื่อดูกราฟ</text>'; return; }
+    const min = Math.min(...weightData), max = Math.max(...weightData), range = (max-min)||1;
+    const xOf = i => i * (600/(n-1));
+    const yOf = v => 20 + (max-v)/range*120;
+    const pts = weightData.map((v,i)=>xOf(i).toFixed(1)+','+yOf(v).toFixed(1)).join(' ');
+    const fillD = 'M'+weightData.map((v,i)=>xOf(i).toFixed(1)+','+yOf(v).toFixed(1)).join(' L')+' L'+xOf(n-1)+',160 L0,160 Z';
+    svg.innerHTML = `
+      <g stroke="#D7E0EA" stroke-width="1">
+        <line x1="0" y1="20" x2="600" y2="20"/><line x1="0" y1="80" x2="600" y2="80"/><line x1="0" y1="140" x2="600" y2="140"/>
+      </g>
+      <path d="${fillD}" fill="rgba(255,75,51,.08)"/>
+      <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    `;
+  }
+
+  // Hero CTA → opens auth
+  document.getElementById('heroMainCta').addEventListener('click', ()=>{
+    if(currentUser){ showDashboard(); }
+    else { openAuth(); }
+  });
+
+  // ===== Dashboard & Landing toggle =====
+  // ===== Google Sign-In =====
+  document.getElementById('googleSignInBtn').addEventListener('click', async ()=>{
+    if(!supabaseClient){
+      showToast('ยังไม่ได้ตั้งค่า Supabase — ใส่ SUPABASE_URL และ SUPABASE_ANON_KEY ก่อน');
+      return;
+    }
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.href,
+      }
+    });
+    if(error) showToast('เกิดข้อผิดพลาด: ' + error.message);
+  });
+
+  // ===== PWA Install =====
+  let pwaPrompt = null;
+  window.addEventListener('beforeinstallprompt', e=>{
+    e.preventDefault();
+    pwaPrompt = e;
+    if(!loadLS('pwaDismissed', false)){
+      setTimeout(()=> document.getElementById('pwaInstallBanner').classList.add('show'), 3000);
+    }
+  });
+  document.getElementById('pwaInstallBtn').addEventListener('click', async ()=>{
+    if(!pwaPrompt) return;
+    pwaPrompt.prompt();
+    const { outcome } = await pwaPrompt.userChoice;
+    pwaPrompt = null;
+    document.getElementById('pwaInstallBanner').classList.remove('show');
+    if(outcome === 'accepted') showToast('ติดตั้ง FITLOG สำเร็จ! 🎉');
+  });
+  document.getElementById('pwaDismissBtn').addEventListener('click', ()=>{
+    document.getElementById('pwaInstallBanner').classList.remove('show');
+    saveLS('pwaDismissed', true);
+  });
+
+  // Register Service Worker for PWA
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('sw.js').catch(()=>{});
+    });
+  }
 
   // ===== Dark Mode =====
   const themeBtn = document.getElementById('themeBtn');
